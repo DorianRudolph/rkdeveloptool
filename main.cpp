@@ -41,29 +41,31 @@ u8 test_gpt_head[] = {
 
 void usage()
 {
-	printf("\r\n---------------------Tool Usage ---------------------\r\n");
-	printf("Help:\t\t\t-h or --help\r\n");
-	printf("Version:\t\t-v or --version\r\n");
-	printf("ListDevice:\t\tld\r\n");
-	printf("DownloadBoot:\t\tdb <Loader>\r\n");
-	printf("UpgradeLoader:\t\tul <Loader>\r\n");
-	printf("ReadLBA:\t\trl  <BeginSec> <SectorLen> <File>\r\n");
-	printf("WriteLBA:\t\twl  <BeginSec> <File>\r\n");
-	printf("WriteLBA:\t\twlx  <PartitionName> <File>\r\n");
-	printf("WriteGPT:\t\tgpt <gpt partition table>\r\n");
-	printf("WriteParameter:\t\tprm <parameter>\r\n");
-	printf("PrintPartition:\t\tppt \r\n");
-	printf("EraseFlash:\t\tef \r\n");
-	printf("TestDevice:\t\ttd\r\n");
-	printf("ResetDevice:\t\trd [subcode]\r\n");
-	printf("ReadFlashID:\t\trid\r\n");
-	printf("ReadFlashInfo:\t\trfi\r\n");
-	printf("ReadChipInfo:\t\trci\r\n");
-	printf("ReadCapability:\t\trcb\r\n");
-	printf("PackBootLoader:\t\tpack\r\n");
-	printf("UnpackBootLoader:\tunpack <boot loader>\r\n");
-	printf("TagSPL:\t\t\ttagspl <tag> <U-Boot SPL>\r\n");
-	printf("-------------------------------------------------------\r\n\r\n");
+	printf("Usage: rkdeveloptool command [args]...\n");
+	printf("Reads or writes the storage of a rockchip device booted into the rockusb bootloader mode\n\n");
+
+	printf("  -h, --help      print this help text\n");
+	printf("  -v, --version   print the version of this tool\n\n");
+
+	printf("  list                  List the detected devices in rockusb mode\n");
+	printf("  list-partitions       List the GPT partition table on the storage\n");
+	printf("  read                  Read sectors from the internal storage\n");
+	printf("  write                 Write sectors from to internal storage\n");
+	printf("  write-partition       Write an image to a specific partition\n");
+	printf("  write-partition-table Write an image to a specific partition\n");
+	printf("  write-parameter       Not sure what this does\n");
+	printf("  erase-flash           Wipe the internal storage\n");
+	printf("  boot                  Download an image to ram and start it\n");
+	printf("  test-device           Tests the device\n");
+	printf("  upgrade-loader        Write a new rockusb loader\n");
+	printf("  reset                 Send a reset command\n");
+	printf("  read-flash-id         Read the flash chip serial number\n");
+	printf("  read-flash-info       Show information about the internal storage\n");
+	printf("  read-chip-info        Show information about the SoC\n");
+	printf("  read-capability       Show the bootloader permissions\n");
+	printf("  pack                  Pack bootloader\n");
+	printf("  unpack                Unpack bootloader\n");
+	printf("  tag-spl               Tag U-Boot SPL\n");
 }
 void ProgressInfoProc(DWORD deviceLayer, ENUM_PROGRESS_PROMPT promptID, long long totalValue, long long currentValue, ENUM_CALL_STEP emCall)
 {
@@ -3076,7 +3078,7 @@ bool handle_command(int argc, char* argv[], CRKScan *pScan)
 		string strLoader = argv[2];
 		unpackBoot((char*)strLoader.c_str());
 		return true;
-	} else if (strcmp(strCmd.c_str(), "TAGSPL") == 0) {//tag u-boot spl
+	} else if (strcmp(strCmd.c_str(), "TAGSPL") == 0 || strcmp(strCmd.c_str(), "TAG-SPL") == 0) {
 		if (argc == 4) {
 			string tag = argv[2];
 			string spl = argv[3];
@@ -3088,7 +3090,7 @@ bool handle_command(int argc, char* argv[], CRKScan *pScan)
 		usage();
 	}
 	cnt = pScan->Search(RKUSB_MASKROM | RKUSB_LOADER);
-	if(strcmp(strCmd.c_str(), "LD") == 0) {
+	if(strcmp(strCmd.c_str(), "LD") == 0 || strcmp(strCmd.c_str(), "LIST") == 0) {
 		list_device(pScan);
 		return (cnt>0)?true:false;
 	}
@@ -3116,9 +3118,9 @@ bool handle_command(int argc, char* argv[], CRKScan *pScan)
 		return bSuccess;
 	}
 
-	if(strcmp(strCmd.c_str(), "RD") == 0) {
+	if(strcmp(strCmd.c_str(), "RD") == 0 || strcmp(strCmd.c_str(), "RESET") == 0) {
 		if ((argc != 2) && (argc != 3))
-			printf("Parameter of [RD] command is invalid, please check help!\r\n");
+			printf("Usage: rkdeveloptool reset [subcode]\r\n");
 		else {
 			if (argc == 2)
 				bSuccess = reset_device(dev);
@@ -3136,17 +3138,17 @@ bool handle_command(int argc, char* argv[], CRKScan *pScan)
 				}
 			}
 		}
-	} else if(strcmp(strCmd.c_str(), "TD") == 0) {
+	} else if(strcmp(strCmd.c_str(), "TD") == 0 || strcmp(strCmd.c_str(), "TEST-DEVICE") == 0) {
 		bSuccess = test_device(dev);
-	} else if (strcmp(strCmd.c_str(), "RID") == 0) {//Read Flash ID
+	} else if (strcmp(strCmd.c_str(), "RID") == 0 || strcmp(strCmd.c_str(), "READ-FLASH-ID") == 0) {
 		bSuccess = read_flash_id(dev);
-	} else if (strcmp(strCmd.c_str(), "RFI") == 0){//Read Flash Info
+	} else if (strcmp(strCmd.c_str(), "RFI") == 0 || strcmp(strCmd.c_str(), "READ-FLASH-INFO") == 0) {
 		bSuccess = read_flash_info(dev);
-	} else if (strcmp(strCmd.c_str(), "RCI") == 0) {//Read Chip Info
+	} else if (strcmp(strCmd.c_str(), "RCI") == 0 || strcmp(strCmd.c_str(), "READ-CHIP-INFO") == 0) {
 		bSuccess = read_chip_info(dev);
-	} else if (strcmp(strCmd.c_str(), "RCB") == 0) {//Read Capability
+	} else if (strcmp(strCmd.c_str(), "RCB") == 0 || strcmp(strCmd.c_str(), "READ-CAPABILITY") == 0) {
 		bSuccess = read_capability(dev);
-	} else if(strcmp(strCmd.c_str(), "DB") == 0) {
+	} else if(strcmp(strCmd.c_str(), "DB") == 0 || strcmp(strCmd.c_str(), "BOOT") == 0) {
 		if (argc > 2) {
 			string strLoader;
 			strLoader = argv[2];
@@ -3158,34 +3160,34 @@ bool handle_command(int argc, char* argv[], CRKScan *pScan)
 			else
 				bSuccess = download_boot(dev, g_ConfigItemVec[ret].szItemValue);
 		} else
-			printf("Parameter of [DB] command is invalid, please check help!\r\n");
-	} else if(strcmp(strCmd.c_str(), "GPT") == 0) {
+			printf("Usage: rkdeveloptool boot image-file\r\n");
+	} else if(strcmp(strCmd.c_str(), "GPT") == 0 || strcmp(strCmd.c_str(), "WRITE-PARTITION-TABLE") == 0) {
 		if (argc > 2) {
 			string strParameter;
 			strParameter = argv[2];
 			bSuccess = write_gpt(dev, (char *)strParameter.c_str());
 		} else
-			printf("Parameter of [GPT] command is invalid, please check help!\r\n");
-	} else if(strcmp(strCmd.c_str(), "PRM") == 0) {
+			printf("Usage: rkdeveloptool write-partition-table definition-file\r\n");
+	} else if(strcmp(strCmd.c_str(), "PRM") == 0 || strcmp(strCmd.c_str(), "WRITE-PARAMETER") == 0) {
 		if (argc > 2) {
 			string strParameter;
 			strParameter = argv[2];
 			bSuccess = write_parameter(dev, (char *)strParameter.c_str());
 		} else
 			printf("Parameter of [PRM] command is invalid, please check help!\r\n");
-	} else if(strcmp(strCmd.c_str(), "UL") == 0) {
+	} else if(strcmp(strCmd.c_str(), "UL") == 0 || strcmp(strCmd.c_str(), "UPGRADE-LOADER") == 0) {
 		if (argc > 2) {
 			string strLoader;
 			strLoader = argv[2];
 			bSuccess = upgrade_loader(dev, (char *)strLoader.c_str());
 		} else
 			printf("Parameter of [UL] command is invalid, please check help!\r\n");
-	} else if(strcmp(strCmd.c_str(), "EF") == 0) {
+	} else if(strcmp(strCmd.c_str(), "EF") == 0 || strcmp(strCmd.c_str(), "ERASE-FLASH") == 0) {
 		if (argc == 2) {
 			bSuccess = erase_flash(dev);
 		} else
 			printf("Parameter of [EF] command is invalid, please check help!\r\n");
-	} else if(strcmp(strCmd.c_str(), "WL") == 0) {
+	} else if(strcmp(strCmd.c_str(), "WL") == 0 || strcmp(strCmd.c_str(), "WRITE") == 0) {
 		if (argc == 4) {
 			UINT uiBegin;
 			char *pszEnd;
@@ -3207,7 +3209,7 @@ bool handle_command(int argc, char* argv[], CRKScan *pScan)
 			}
 		} else
 			printf("Parameter of [WL] command is invalid, please check help!\r\n");
-	} else if(strcmp(strCmd.c_str(), "WLX") == 0) {
+	} else if(strcmp(strCmd.c_str(), "WLX") == 0 || strcmp(strCmd.c_str(), "WRITE-PARTITION") == 0) {
 		if (argc == 4) {
 			bRet = read_gpt(dev, master_gpt);
 			if (bRet) {
@@ -3252,16 +3254,16 @@ bool handle_command(int argc, char* argv[], CRKScan *pScan)
 						printf("No found %s partition\r\n", argv[2]);
 				}
 				else
-					printf("Not found any partition table!\r\n");
+					printf("The device does not have a partition table!\r\n");
 			}
 			
 		} else
-			printf("Parameter of [WLX] command is invalid, please check help!\r\n");
-	} else if (strcmp(strCmd.c_str(), "RL") == 0) {//Read LBA
+			printf("Usage: rkdeveloptool write-partition partition-name filename\r\n");
+	} else if (strcmp(strCmd.c_str(), "RL") == 0 || strcmp(strCmd.c_str(), "READ") == 0) {
 		char *pszEnd;
 		UINT uiBegin, uiLen;
 		if (argc != 5)
-			printf("Parameter of [RL] command is invalid, please check help!\r\n");
+			printf("Usage: rkdeveloptool read start-sector num-sectors filename\r\n");
 		else {
 			uiBegin = strtoul(argv[2], &pszEnd, 0);
 			if (*pszEnd)
@@ -3275,7 +3277,7 @@ bool handle_command(int argc, char* argv[], CRKScan *pScan)
 				}
 			}
 		}
-	} else if(strcmp(strCmd.c_str(), "PPT") == 0) {
+	} else if(strcmp(strCmd.c_str(), "PPT") == 0 || strcmp(strCmd.c_str(), "LIST-PARTITIONS") == 0) {
 		if (argc == 2) {
 			bSuccess = print_gpt(dev);
 			if (!bSuccess) {
