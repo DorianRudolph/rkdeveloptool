@@ -2509,8 +2509,6 @@ Exit_ReadGPT:
 }
 bool read_lba(STRUCT_RKDEVICE_DESC &dev, UINT uiBegin, UINT uiLen, char *szFile)
 {
-	if (!check_device_type(dev, RKUSB_LOADER | RKUSB_MASKROM))
-		return false;
 	CRKUsbComm *pComm = NULL;
 	FILE *file = NULL;
 	bool bRet, bFirst = true, bSuccess = false;
@@ -2519,54 +2517,64 @@ bool read_lba(STRUCT_RKDEVICE_DESC &dev, UINT uiBegin, UINT uiLen, char *szFile)
 	int nSectorSize = 512;
 	BYTE pBuf[nSectorSize * DEFAULT_RW_LBA];
 	pComm =  new CRKUsbComm(dev, g_pLogObject, bRet);
-	if (bRet) {
-		if(szFile) {
-			file = fopen(szFile, "wb+");
-			if( !file ) {
-				printf("Read LBA failed, err=%d, can't open file: %s\r\n", errno, szFile);
-				goto Exit_ReadLBA;
-			}
-		}
 
-		while(uiLen > 0) {
-			memset(pBuf, 0, nSectorSize * DEFAULT_RW_LBA);
-			iRead = (uiLen >= DEFAULT_RW_LBA) ? DEFAULT_RW_LBA : uiLen;
-			iRet = pComm->RKU_ReadLBA( uiBegin + iTotalRead, iRead, pBuf);
-			if(ERR_SUCCESS == iRet) {
-				uiLen -= iRead;
-				iTotalRead += iRead;
-
-				if(szFile) {
-					fwrite(pBuf, 1, iRead * nSectorSize, file);
-					if (bFirst){
-						if (iTotalRead >= 1024)
-							printf("Read LBA to file (%d%%)\r\n", (iTotalRead / 1024) * 100 / ((uiLen + iTotalRead) / 1024));
-						else
-							printf("Read LBA to file (%d%%)\r\n", iTotalRead * 100 / (uiLen + iTotalRead));
-						bFirst = false;
-					} else {
-						CURSOR_MOVEUP_LINE(1);
-						CURSOR_DEL_LINE;
-						if (iTotalRead >= 1024)
-							printf("Read LBA to file (%d%%)\r\n", (iTotalRead / 1024) * 100 / ((uiLen + iTotalRead) / 1024));
-						else
-							printf("Read LBA to file (%d%%)\r\n", iTotalRead * 100 / (uiLen + iTotalRead));
-					}
-				}
-				else
-					PrintData(pBuf, nSectorSize * iRead);
-			} else {
-				if (g_pLogObject)
-					g_pLogObject->Record("Error: RKU_ReadLBA failed, err=%d", iRet);
-
-				printf("Read LBA failed!\r\n");
-				goto Exit_ReadLBA;
-			}
-		}
-		bSuccess = true;
-	} else {
-		printf("Read LBA quit, creating comm object failed!\r\n");
+	if (!check_device_type(dev, RKUSB_LOADER | RKUSB_MASKROM))
+		return false;
+	if (uiLen % 512) {
+		fprintf(stderr, "Length must be a multiple of sector size (%d)\r\n", SECTOR_SIZE);
+		return false;
 	}
+	uiLen /= 512;
+
+	if (!bRet) {
+		fprintf(stderr, "Read LBA quit, creating comm object failed!\r\n");
+		return false;
+	}
+
+	if(szFile) {
+		file = fopen(szFile, "wb+");
+		if( !file ) {
+			printf("Read LBA failed, err=%d, can't open file: %s\r\n", errno, szFile);
+			goto Exit_ReadLBA;
+		}
+	}
+
+	while(uiLen > 0) {
+		memset(pBuf, 0, nSectorSize * DEFAULT_RW_LBA);
+		iRead = (uiLen >= DEFAULT_RW_LBA) ? DEFAULT_RW_LBA : uiLen;
+		iRet = pComm->RKU_ReadLBA( uiBegin + iTotalRead, iRead, pBuf);
+		if(ERR_SUCCESS == iRet) {
+			uiLen -= iRead;
+			iTotalRead += iRead;
+
+			if(szFile) {
+				fwrite(pBuf, 1, iRead * nSectorSize, file);
+				if (bFirst){
+					if (iTotalRead >= 1024)
+						printf("Read LBA to file (%d%%)\r\n", (iTotalRead / 1024) * 100 / ((uiLen + iTotalRead) / 1024));
+					else
+						printf("Read LBA to file (%d%%)\r\n", iTotalRead * 100 / (uiLen + iTotalRead));
+					bFirst = false;
+				} else {
+					CURSOR_MOVEUP_LINE(1);
+					CURSOR_DEL_LINE;
+					if (iTotalRead >= 1024)
+						printf("Read LBA to file (%d%%)\r\n", (iTotalRead / 1024) * 100 / ((uiLen + iTotalRead) / 1024));
+					else
+						printf("Read LBA to file (%d%%)\r\n", iTotalRead * 100 / (uiLen + iTotalRead));
+				}
+			}
+			else
+				PrintData(pBuf, nSectorSize * iRead);
+		} else {
+			if (g_pLogObject)
+				g_pLogObject->Record("Error: RKU_ReadLBA failed, err=%d", iRet);
+
+			printf("Read LBA failed!\r\n");
+			goto Exit_ReadLBA;
+		}
+	}
+	bSuccess = true;
 Exit_ReadLBA:
 	if (pComm) {
 		delete pComm;
