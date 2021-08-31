@@ -2063,20 +2063,22 @@ bool print_gpt(STRUCT_RKDEVICE_DESC &dev)
 		printf("Read GPT failed!\r\n");
 		goto Exit_PrintGpt;
 	}
-	
-	printf("**********Partition Info(GPT)**********\r\n");
-	printf("NO  LBA       Name                \r\n");
+
+	printf("#   LBA start (sectors)  LBA end (sectors)  Size (bytes)       Name                \r\n");
 	for (i = 0; i < le32_to_cpu(gptHead->num_partition_entries); i++) {
 		gptEntry = (gpt_entry *)(master_gpt + 2 * SECTOR_SIZE + i * GPT_ENTRY_SIZE);
 		if (memcmp(zerobuf, (u8 *)gptEntry, GPT_ENTRY_SIZE) == 0)
 			break;
+		gptEntry->starting_lba = (u32)le64_to_cpu(gptEntry->starting_lba);
+		gptEntry->ending_lba = (u32)le64_to_cpu(gptEntry->ending_lba);
 		memset(partName, 0 , 36);
 		j = 0;
 		while (gptEntry->partition_name[j]) {
 			partName[j] = (char)gptEntry->partition_name[j];
 			j++;
 		}
-		printf("%02d  %08X  %s\r\n", i, (u32)le64_to_cpu(gptEntry->starting_lba), partName);
+		printf("%02d           %10d         %10d  %12lu       %s\r\n", i, gptEntry->starting_lba, gptEntry->ending_lba, 
+		((u64)(gptEntry->ending_lba-gptEntry->starting_lba + 1)) * 512, partName);
 	}
 	bSuccess = true;
 Exit_PrintGpt:
