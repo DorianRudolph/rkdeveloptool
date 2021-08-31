@@ -6,7 +6,6 @@
 #include "DefineHeader.h"
 
 #define SECTOR_SIZE 512
-#define PAGE_SIZE 2048
 #define SPARE_SIZE 16
 #define CHIPINFO_LEN 16
 #define IDBLOCK_TOP 50
