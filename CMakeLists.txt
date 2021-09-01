@@ -58,3 +58,7 @@ target_include_directories (${PROJECT_NAME} PRIVATE
     "${LIBUSB_INCLUDE_DIR}"
     "${Iconv_INCLUDE_DIRS}"
     )
+
+# Install
+install(FILES ${PROJECT_SOURCE_DIR}/99-rk-rockusb.rules DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/udev/rules.d)
+install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
