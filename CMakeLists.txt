@@ -8,7 +8,7 @@ file (GLOB LOCAL_CPP_FILES *.cpp)
 set (SOURCE_FILES ${SOURCE_FILES} ${LOCAL_CPP_FILES})
 
 file (GLOB LOCAL_H_FILES *.h)
-set (HEADER_FILES ${HEADER_FILES} ${LOCAL_H_FILES})
+set (HEADER_FILES ${HEADER_FILES} ${LOCAL_H_FILES} config.h)
 
 project (${PROJECT_NAME})
 
@@ -59,6 +59,14 @@ target_include_directories (${PROJECT_NAME} PRIVATE
     "${Iconv_INCLUDE_DIRS}"
     )
 
+# Man pages
+add_custom_target(doc ALL
+        COMMAND scdoc < ${PROJECT_SOURCE_DIR}/doc/rkdeveloptool.1.scd > ${CMAKE_BINARY_DIR}/rkdeveloptool.1
+        COMMAND gzip -f ${CMAKE_BINARY_DIR}/rkdeveloptool.1
+        BYPRODUCTS ${CMAKE_BINARY_DIR}/rkdeveloptool.1 ${CMAKE_BINARY_DIR}/rkdeveloptool.1.gz
+        DEPENDS ${PROJECT_SOURCE_DIR}/doc/rkdeveloptool.1.scd)
+
 # Install
 install(FILES ${PROJECT_SOURCE_DIR}/99-rk-rockusb.rules DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/udev/rules.d)
+install(FILES ${CMAKE_BINARY_DIR}/rkdeveloptool.1.gz DESTINATION ${CMAKE_INSTALL_PREFIX}/man/man1)
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
