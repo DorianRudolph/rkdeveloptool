@@ -143,7 +143,7 @@ long get_file_size(const char *path) {
 }
 
 int find_config_item(CONFIG_ITEM_VECTOR &vecItems, const char *pszName) {
-	unsigned int i;
+	int i;
 	for (i = 0; i < vecItems.size(); i++) {
 		if (strcasecmp(pszName, vecItems[i].szItemName) == 0) {
 			return i;
@@ -193,23 +193,23 @@ bool parse_config(char *pConfig, CONFIG_ITEM_VECTOR &vecItem) {
 		if (strLine[line_size - 1] == '\r') {
 			strLine = strLine.substr(0, line_size - 1);
 		}
-		strLine.erase(0, strLine.find_first_not_of(" "));
-		strLine.erase(strLine.find_last_not_of(" ") + 1);
-		if (strLine.size() == 0)
+		strLine.erase(0, strLine.find_first_not_of(' '));
+		strLine.erase(strLine.find_last_not_of(' ') + 1);
+		if (strLine.empty())
 			continue;
 		if (strLine[0] == '#')
 			continue;
-		pos = strLine.find("=");
+		pos = strLine.find('=');
 		if (pos == string::npos) {
 			continue;
 		}
 		strItemName = strLine.substr(0, pos);
 		strItemValue = strLine.substr(pos + 1);
-		strItemName.erase(0, strItemName.find_first_not_of(" "));
-		strItemName.erase(strItemName.find_last_not_of(" ") + 1);
-		strItemValue.erase(0, strItemValue.find_first_not_of(" "));
-		strItemValue.erase(strItemValue.find_last_not_of(" ") + 1);
-		if ((strItemName.size() > 0) && (strItemValue.size() > 0)) {
+		strItemName.erase(0, strItemName.find_first_not_of(' '));
+		strItemName.erase(strItemName.find_last_not_of(' ') + 1);
+		strItemValue.erase(0, strItemValue.find_first_not_of(' '));
+		strItemValue.erase(strItemValue.find_last_not_of(' ') + 1);
+		if ((!strItemName.empty()) && (!strItemValue.empty())) {
 			strcpy(item.szItemName, strItemName.c_str());
 			strcpy(item.szItemValue, strItemValue.c_str());
 			vecItem.push_back(item);
@@ -218,7 +218,7 @@ bool parse_config(char *pConfig, CONFIG_ITEM_VECTOR &vecItem) {
 	return true;
 }
 bool parse_config_file(const char *pConfigFile, CONFIG_ITEM_VECTOR &vecItem) {
-	FILE *file = NULL;
+	FILE *file = nullptr;
 	file = fopen(pConfigFile, "rb");
 	if (!file) {
 		if (g_pLogObject)
@@ -226,11 +226,11 @@ bool parse_config_file(const char *pConfigFile, CONFIG_ITEM_VECTOR &vecItem) {
 					__func__, errno, pConfigFile);
 		return false;
 	}
-	int iFileSize;
+	long iFileSize;
 	fseek(file, 0, SEEK_END);
 	iFileSize = ftell(file);
 	fseek(file, 0, SEEK_SET);
-	char *pConfigBuf = NULL;
+	char *pConfigBuf = nullptr;
 	pConfigBuf = new char[iFileSize + 1];
 	if (!pConfigBuf) {
 		fclose(file);
@@ -259,7 +259,7 @@ bool parse_partition_info(
 	string strOffset, strLen;
 	int iCount;
 	prevPos = pos = 0;
-	if (strPartInfo.size() <= 0) {
+	if (strPartInfo.empty()) {
 		return false;
 	}
 	pos = strPartInfo.find('@');
@@ -267,8 +267,8 @@ bool parse_partition_info(
 		return false;
 	}
 	strLen = strPartInfo.substr(prevPos, pos - prevPos);
-	strLen.erase(0, strLen.find_first_not_of(" "));
-	strLen.erase(strLen.find_last_not_of(" ") + 1);
+	strLen.erase(0, strLen.find_first_not_of(' '));
+	strLen.erase(strLen.find_last_not_of(' ') + 1);
 	if (strchr(strLen.c_str(), '-')) {
 		uiLen = 0xFFFFFFFF;
 	} else {
@@ -284,8 +284,8 @@ bool parse_partition_info(
 		return false;
 	}
 	strOffset = strPartInfo.substr(prevPos, pos - prevPos);
-	strOffset.erase(0, strOffset.find_first_not_of(" "));
-	strOffset.erase(strOffset.find_last_not_of(" ") + 1);
+	strOffset.erase(0, strOffset.find_first_not_of(' '));
+	strOffset.erase(strOffset.find_last_not_of(' ') + 1);
 	iCount = sscanf(strOffset.c_str(), "0x%x", &uiOffset);
 	if (iCount != 1) {
 		return false;
@@ -296,15 +296,15 @@ bool parse_partition_info(
 		return false;
 	}
 	strName = strPartInfo.substr(prevPos, pos - prevPos);
-	strName.erase(0, strName.find_first_not_of(" "));
-	strName.erase(strName.find_last_not_of(" ") + 1);
+	strName.erase(0, strName.find_first_not_of(' '));
+	strName.erase(strName.find_last_not_of(' ') + 1);
 
 	return true;
 }
 bool parse_uuid_info(string &strUuidInfo, string &strName, string &strUUid) {
 	string::size_type pos(0);
 
-	if (strUuidInfo.size() <= 0) {
+	if (strUuidInfo.empty()) {
 		return false;
 	}
 	pos = strUuidInfo.find('=');
@@ -312,23 +312,21 @@ bool parse_uuid_info(string &strUuidInfo, string &strName, string &strUUid) {
 		return false;
 	}
 	strName = strUuidInfo.substr(0, pos);
-	strName.erase(0, strName.find_first_not_of(" "));
-	strName.erase(strName.find_last_not_of(" ") + 1);
+	strName.erase(0, strName.find_first_not_of(' '));
+	strName.erase(strName.find_last_not_of(' ') + 1);
 
 	strUUid = strUuidInfo.substr(pos + 1);
-	strUUid.erase(0, strUUid.find_first_not_of(" "));
-	strUUid.erase(strUUid.find_last_not_of(" ") + 1);
+	strUUid.erase(0, strUUid.find_first_not_of(' '));
+	strUUid.erase(strUUid.find_last_not_of(' ') + 1);
 
 	while (true) {
 		pos = 0;
-		if ((pos = strUUid.find("-")) != string::npos)
+		if ((pos = strUUid.find('-')) != string::npos)
 			strUUid.replace(pos, 1, "");
 		else
 			break;
 	}
-	if (strUUid.size() != 32)
-		return false;
-	return true;
+	return strUUid.size() == 32;
 }
 
 bool parse_parameter(char *pParameter, PARAM_ITEM_VECTOR &vecItem,
@@ -350,9 +348,9 @@ bool parse_parameter(char *pParameter, PARAM_ITEM_VECTOR &vecItem,
 		if (strLine[line_size - 1] == '\r') {
 			strLine = strLine.substr(0, line_size - 1);
 		}
-		strLine.erase(0, strLine.find_first_not_of(" "));
-		strLine.erase(strLine.find_last_not_of(" ") + 1);
-		if (strLine.size() == 0)
+		strLine.erase(0, strLine.find_first_not_of(' '));
+		strLine.erase(strLine.find_last_not_of(' ') + 1);
+		if (strLine.empty())
 			continue;
 		if (strLine[0] == '#')
 			continue;
@@ -394,7 +392,7 @@ bool parse_parameter(char *pParameter, PARAM_ITEM_VECTOR &vecItem,
 			posComma = strPartition.find(',', pos);
 		}
 		strPartInfo = strPartition.substr(pos);
-		if (strPartInfo.size() > 0) {
+		if (!strPartInfo.empty()) {
 			bRet = parse_partition_info(
 					strPartInfo, strPartName, uiPartOffset, uiPartSize);
 			if (bRet) {
@@ -409,7 +407,7 @@ bool parse_parameter(char *pParameter, PARAM_ITEM_VECTOR &vecItem,
 }
 bool parse_parameter_file(char *pParamFile, PARAM_ITEM_VECTOR &vecItem,
 		CONFIG_ITEM_VECTOR &vecUuidItem) {
-	FILE *file = NULL;
+	FILE *file = nullptr;
 	file = fopen(pParamFile, "rb");
 	if (!file) {
 		if (g_pLogObject)
@@ -417,11 +415,11 @@ bool parse_parameter_file(char *pParamFile, PARAM_ITEM_VECTOR &vecItem,
 					__func__, errno, pParamFile);
 		return false;
 	}
-	int iFileSize;
+	long iFileSize;
 	fseek(file, 0, SEEK_END);
 	iFileSize = ftell(file);
 	fseek(file, 0, SEEK_SET);
-	char *pParamBuf = NULL;
+	char *pParamBuf = nullptr;
 	pParamBuf = new char[iFileSize];
 	if (!pParamBuf) {
 		fclose(file);
@@ -444,7 +442,7 @@ bool parse_parameter_file(char *pParamFile, PARAM_ITEM_VECTOR &vecItem,
 	return bRet;
 }
 bool is_sparse_image(char *szImage) {
-	FILE *file = NULL;
+	FILE *file = nullptr;
 	sparse_header head;
 	u32 uiRead;
 	file = fopen(szImage, "rb");
@@ -463,13 +461,10 @@ bool is_sparse_image(char *szImage) {
 		return false;
 	}
 	fclose(file);
-	if (head.magic != SPARSE_HEADER_MAGIC) {
-		return false;
-	}
-	return true;
+	return head.magic == SPARSE_HEADER_MAGIC;
 }
 bool is_ubifs_image(char *szImage) {
-	FILE *file = NULL;
+	FILE *file = nullptr;
 	u32 magic;
 	u32 uiRead;
 	file = fopen(szImage, "rb");
@@ -488,14 +483,11 @@ bool is_ubifs_image(char *szImage) {
 		return false;
 	}
 	fclose(file);
-	if (magic != UBI_HEADER_MAGIC) {
-		return false;
-	}
-	return true;
+	return magic == UBI_HEADER_MAGIC;
 }
 void gen_rand_uuid(unsigned char *uuid_bin) {
 	efi_guid_t id;
-	unsigned int *ptr = (unsigned int *)&id;
+	auto *ptr = (unsigned int *)&id;
 	unsigned int i;
 
 	/* Set all fields randomly */
@@ -511,8 +503,8 @@ void gen_rand_uuid(unsigned char *uuid_bin) {
 }
 
 void prepare_gpt_backup(u8 *master, u8 *backup) {
-	gpt_header *gptMasterHead = (gpt_header *)(master + SECTOR_SIZE);
-	gpt_header *gptBackupHead = (gpt_header *)(backup + 32 * SECTOR_SIZE);
+	auto *gptMasterHead = (gpt_header *)(master + SECTOR_SIZE);
+	auto *gptBackupHead = (gpt_header *)(backup + 32 * SECTOR_SIZE);
 	u32 calc_crc32;
 	u64 val;
 
@@ -530,8 +522,8 @@ void prepare_gpt_backup(u8 *master, u8 *backup) {
 }
 
 bool get_lba_from_gpt(u8 *master, char *pszName, u64 *lba, u64 *lba_end) {
-	gpt_header *gptMasterHead = (gpt_header *)(master + SECTOR_SIZE);
-	gpt_entry *gptEntry = NULL;
+	auto *gptMasterHead = (gpt_header *)(master + SECTOR_SIZE);
+	gpt_entry *gptEntry = nullptr;
 	u32 i, j;
 	u8 zerobuf[GPT_ENTRY_SIZE];
 	bool bFound = false;
@@ -587,8 +579,8 @@ bool get_lba_from_param(
 }
 
 void update_gpt_disksize(u8 *master, u8 *backup, u32 total_sector) {
-	gpt_header *gptMasterHead = (gpt_header *)(master + SECTOR_SIZE);
-	gpt_entry *gptLastPartEntry = NULL;
+	auto *gptMasterHead = (gpt_header *)(master + SECTOR_SIZE);
+	gpt_entry *gptLastPartEntry = nullptr;
 	u32 i;
 	u64 old_disksize;
 	u8 zerobuf[GPT_ENTRY_SIZE];
@@ -623,7 +615,7 @@ void update_gpt_disksize(u8 *master, u8 *backup, u32 total_sector) {
 	prepare_gpt_backup(master, backup);
 }
 bool load_gpt_buffer(char *pParamFile, u8 *master, u8 *backup) {
-	FILE *file = NULL;
+	FILE *file = nullptr;
 	file = fopen(pParamFile, "rb");
 	if (!file) {
 		if (g_pLogObject)
@@ -631,7 +623,7 @@ bool load_gpt_buffer(char *pParamFile, u8 *master, u8 *backup) {
 					__func__, errno, pParamFile);
 		return false;
 	}
-	int iFileSize;
+	long iFileSize;
 	fseek(file, 0, SEEK_END);
 	iFileSize = ftell(file);
 	fseek(file, 0, SEEK_SET);
@@ -667,9 +659,9 @@ bool load_gpt_buffer(char *pParamFile, u8 *master, u8 *backup) {
 }
 void create_gpt_buffer(u8 *gpt, PARAM_ITEM_VECTOR &vecParts,
 		CONFIG_ITEM_VECTOR &vecUuid, u64 diskSectors) {
-	legacy_mbr *mbr = (legacy_mbr *)gpt;
-	gpt_header *gptHead = (gpt_header *)(gpt + SECTOR_SIZE);
-	gpt_entry *gptEntry = (gpt_entry *)(gpt + 2 * SECTOR_SIZE);
+	auto *mbr = (legacy_mbr *)gpt;
+	auto *gptHead = (gpt_header *)(gpt + SECTOR_SIZE);
+	auto *gptEntry = (gpt_entry *)(gpt + 2 * SECTOR_SIZE);
 	u32 i, j;
 	int pos;
 	string strPartName;
@@ -829,7 +821,7 @@ bool check_device_type(STRUCT_RKDEVICE_DESC &dev, UINT uiSupportType) {
 	}
 }
 bool make_param_buffer(char *pParamFile, char *&pParamData) {
-	FILE *file = NULL;
+	FILE *file = nullptr;
 	file = fopen(pParamFile, "rb");
 	if (!file) {
 		if (g_pLogObject)
@@ -838,11 +830,11 @@ bool make_param_buffer(char *pParamFile, char *&pParamData) {
 					errno, pParamFile);
 		return false;
 	}
-	int iFileSize;
+	long iFileSize;
 	fseek(file, 0, SEEK_END);
 	iFileSize = ftell(file);
 	fseek(file, 0, SEEK_SET);
-	char *pParamBuf = NULL;
+	char *pParamBuf = nullptr;
 	pParamBuf = new char[iFileSize + 12];
 	if (!pParamBuf) {
 		fclose(file);
@@ -872,8 +864,8 @@ bool make_param_buffer(char *pParamFile, char *&pParamData) {
 }
 
 bool write_parameter(STRUCT_RKDEVICE_DESC &dev, char *szParameter) {
-	CRKComm *pComm = NULL;
-	char *pParamBuf = NULL, writeBuf[512 * 1024];
+	CRKComm *pComm = nullptr;
+	char *pParamBuf = nullptr, writeBuf[512 * 1024];
 	int iRet, nParamSec, nParamSize;
 	bool bRet, bSuccess = false;
 	if (!check_device_type(dev, RKUSB_MASKROM | RKUSB_LOADER))
@@ -926,7 +918,7 @@ bool write_gpt(STRUCT_RKDEVICE_DESC &dev, char *szParameter) {
 	u8 flash_info[SECTOR_SIZE], master_gpt[34 * SECTOR_SIZE],
 			backup_gpt[33 * SECTOR_SIZE];
 	u32 total_size_sector;
-	CRKComm *pComm = NULL;
+	CRKComm *pComm = nullptr;
 	PARAM_ITEM_VECTOR vecItems;
 	CONFIG_ITEM_VECTOR vecUuid;
 	int iRet;
@@ -1050,7 +1042,8 @@ static bool parse_version(FILE *file) {
 }
 
 static bool parse471(FILE *file) {
-	int i, index, pos;
+	int i, index;
+	long pos;
 	char buf[MAX_LINE_LEN];
 
 	if (SCANF_EAT(file) != 0) {
@@ -1086,7 +1079,8 @@ static bool parse471(FILE *file) {
 }
 
 static bool parse472(FILE *file) {
-	int i, index, pos;
+	long pos;
+	int i, index;
 	char buf[MAX_LINE_LEN];
 
 	if (SCANF_EAT(file) != 0) {
@@ -1122,7 +1116,8 @@ static bool parse472(FILE *file) {
 }
 
 static bool parse_loader(FILE *file) {
-	int i, j, index, pos;
+	int i, j, index;
+	long pos;
 	char buf[MAX_LINE_LEN];
 	char buf2[MAX_LINE_LEN];
 
@@ -1215,7 +1210,7 @@ void print_opts(FILE *out) {
 	fprintf(out, SEC_OUT "\n" OPT_OUT_PATH "=%s\n", gOpts.outPath);
 }
 
-static bool parse_opts(void) {
+static bool parse_opts() {
 	bool ret = false;
 	bool chipOk = false;
 	bool versionOk = false;
@@ -1225,7 +1220,7 @@ static bool parse_opts(void) {
 	bool outOk = false;
 	char buf[MAX_LINE_LEN];
 
-	char *configPath = (gConfigPath == (char *)NULL) ? (char *)DEF_CONFIG_FILE :
+	char *configPath = (gConfigPath == (char *)nullptr) ? (char *)DEF_CONFIG_FILE :
 													   gConfigPath;
 	FILE *file;
 	file = fopen(configPath, "r");
@@ -1302,7 +1297,7 @@ end:
 	return ret;
 }
 
-bool init_opts(void) {
+bool init_opts() {
 	// set default opts
 	gOpts.major = DEF_MAJOR;
 	gOpts.minor = DEF_MINOR;
@@ -1356,7 +1351,7 @@ static inline void str2wide(const char *str, uint16_t *wide, int len) {
 static inline void get_name(char *path, uint16_t *dst) {
 	char *end;
 	char *start;
-	int len;
+	size_t len;
 	if (!path || !dst)
 		return;
 	start = strrchr(path, '/');
@@ -1378,11 +1373,11 @@ static inline void get_name(char *path, uint16_t *dst) {
 	printf("path: %s, name: %s\n", path, name);
 }
 
-static inline rk_time get_time(void) {
+static inline rk_time get_time() {
 	rk_time rkTime;
 
 	struct tm *tm;
-	time_t tt = time(NULL);
+	time_t tt = time(nullptr);
 	tm = localtime(&tt);
 	rkTime.year = tm->tm_year + 1900;
 	rkTime.month = tm->tm_mon + 1;
@@ -1422,7 +1417,7 @@ static bool write_file(FILE *outFile, const char *path, bool fix) {
 
 		buf = gBuf;
 		size = fixSize;
-		while (1) {
+		while (true) {
 			P_RC4(buf, fixSize < SMALL_PACKET ? fixSize : SMALL_PACKET);
 			buf += SMALL_PACKET;
 			if (fixSize <= SMALL_PACKET)
@@ -1587,7 +1582,7 @@ end:
 	return crc;
 }
 
-bool merge_boot(void) {
+bool merge_boot() {
 	uint32_t dataOffset;
 	bool ret = false;
 	int i;
@@ -1629,13 +1624,13 @@ bool merge_boot(void) {
 	printf("Writing code 471 entry...\n");
 	for (i = 0; i < gOpts.code471Num; i++) {
 		if (!save_entry(outFile, (char *)gOpts.code471Path[i], ENTRY_471,
-					gOpts.code471Sleep, &dataOffset, NULL, false))
+					gOpts.code471Sleep, &dataOffset, nullptr, false))
 			goto end;
 	}
 	printf("Writing code 472 entry...\n");
 	for (i = 0; i < gOpts.code472Num; i++) {
 		if (!save_entry(outFile, (char *)gOpts.code472Path[i], ENTRY_472,
-					gOpts.code472Sleep, &dataOffset, NULL, false))
+					gOpts.code472Sleep, &dataOffset, nullptr, false))
 			goto end;
 	}
 	printf("Writing loader entry...\n");
@@ -1760,8 +1755,8 @@ end:
 bool download_boot(STRUCT_RKDEVICE_DESC &dev, char *szLoader) {
 	if (!check_device_type(dev, RKUSB_MASKROM))
 		return false;
-	CRKImage *pImage = NULL;
-	CRKBoot *pBoot = NULL;
+	CRKImage *pImage = nullptr;
+	CRKBoot *pBoot = nullptr;
 	bool bRet, bSuccess = false;
 	int iRet;
 
@@ -1774,14 +1769,13 @@ bool download_boot(STRUCT_RKDEVICE_DESC &dev, char *szLoader) {
 		return bSuccess;
 	} else {
 		pBoot = (CRKBoot *)pImage->m_bootObject;
-		CRKComm *pComm = NULL;
-		CRKDevice *pDevice = NULL;
+		CRKComm *pComm = nullptr;
+		CRKDevice *pDevice = nullptr;
 
 		dev.emDeviceType = pBoot->SupportDevice;
 		pComm = new CRKUsbComm(dev, g_pLogObject, bRet);
 		if (!bRet) {
-			if (pImage)
-				delete pImage;
+			delete pImage;
 			ERROR_COLOR_ATTR;
 			printf("Creating Comm Object failed!");
 			NORMAL_COLOR_ATTR;
@@ -1791,10 +1785,8 @@ bool download_boot(STRUCT_RKDEVICE_DESC &dev, char *szLoader) {
 
 		pDevice = new CRKDevice(dev);
 		if (!pDevice) {
-			if (pImage)
-				delete pImage;
-			if (pComm)
-				delete pComm;
+			delete pImage;
+			delete pComm;
 			ERROR_COLOR_ATTR;
 			printf("Creating device object failed!");
 			NORMAL_COLOR_ATTR;
@@ -1814,19 +1806,17 @@ bool download_boot(STRUCT_RKDEVICE_DESC &dev, char *szLoader) {
 		} else
 			printf("Downloading bootloader failed!\n");
 
-		if (pImage)
-			delete pImage;
-		if (pDevice)
-			delete pDevice;
+		delete pImage;
+		delete pDevice;
 	}
 	return bSuccess;
 }
 bool upgrade_loader(STRUCT_RKDEVICE_DESC &dev, char *szLoader) {
 	if (!check_device_type(dev, RKUSB_MASKROM))
 		return false;
-	CRKImage *pImage = NULL;
-	CRKBoot *pBoot = NULL;
-	CRKComm *pComm = NULL;
+	CRKImage *pImage = nullptr;
+	CRKBoot *pBoot = nullptr;
+	CRKComm *pComm = nullptr;
 	bool bRet, bNewIDBlock = false, bSuccess = false;
 	int iRet;
 	unsigned int i;
@@ -1837,10 +1827,10 @@ bool upgrade_loader(STRUCT_RKDEVICE_DESC &dev, char *szLoader) {
 	char loaderCodeName[] = "FlashBoot";
 	char loaderDataName[] = "FlashData";
 	char loaderHeadName[] = "FlashHead";
-	PBYTE loaderCodeBuffer = NULL;
-	PBYTE loaderDataBuffer = NULL;
-	PBYTE loaderHeadBuffer = NULL;
-	PBYTE pIDBData = NULL;
+	PBYTE loaderCodeBuffer = nullptr;
+	PBYTE loaderDataBuffer = nullptr;
+	PBYTE loaderHeadBuffer = nullptr;
+	PBYTE pIDBData = nullptr;
 	BYTE capability[8];
 	pImage = new CRKImage(szLoader, bRet);
 	if (!bRet) {
@@ -2026,32 +2016,26 @@ bool upgrade_loader(STRUCT_RKDEVICE_DESC &dev, char *szLoader) {
 		}
 	}
 Exit_UpgradeLoader:
-	if (pImage)
-		delete pImage;
-	if (pComm)
-		delete pComm;
-	if (loaderCodeBuffer)
-		delete[] loaderCodeBuffer;
-	if (loaderDataBuffer)
-		delete[] loaderDataBuffer;
-	if (loaderHeadBuffer)
-		delete[] loaderHeadBuffer;
-	if (pIDBData)
-		delete[] pIDBData;
+	delete pImage;
+	delete pComm;
+	delete[] loaderCodeBuffer;
+	delete[] loaderDataBuffer;
+	delete[] loaderHeadBuffer;
+	delete[] pIDBData;
 	return bSuccess;
 }
 bool print_gpt(STRUCT_RKDEVICE_DESC &dev) {
 	if (!check_device_type(dev, RKUSB_LOADER | RKUSB_MASKROM))
 		return false;
 	u8 master_gpt[34 * SECTOR_SIZE];
-	gpt_header *gptHead = (gpt_header *)(master_gpt + SECTOR_SIZE);
+	auto *gptHead = (gpt_header *)(master_gpt + SECTOR_SIZE);
 	bool bRet, bSuccess = false;
 	int iRet;
-	gpt_entry *gptEntry = NULL;
+	gpt_entry *gptEntry = nullptr;
 	u32 i, j;
 	u8 zerobuf[GPT_ENTRY_SIZE];
 	memset(zerobuf, 0, GPT_ENTRY_SIZE);
-	CRKComm *pComm = NULL;
+	CRKComm *pComm = nullptr;
 	char partName[36];
 	pComm = new CRKUsbComm(dev, g_pLogObject, bRet);
 	if (!bRet) {
@@ -2089,7 +2073,7 @@ bool print_gpt(STRUCT_RKDEVICE_DESC &dev) {
 			partName[j] = (char)gptEntry->partition_name[j];
 			j++;
 		}
-		printf("%02d           %10d         %10d  %12lu       %s\n", i,
+		printf("%02d           %10llu         %10llu  %12llu       %s\n", i,
 				gptEntry->starting_lba, gptEntry->ending_lba,
 				((u64)(gptEntry->ending_lba - gptEntry->starting_lba + 1)) *
 						512,
@@ -2097,8 +2081,7 @@ bool print_gpt(STRUCT_RKDEVICE_DESC &dev) {
 	}
 	bSuccess = true;
 Exit_PrintGpt:
-	if (pComm)
-		delete pComm;
+	delete pComm;
 	return bSuccess;
 }
 bool print_parameter(STRUCT_RKDEVICE_DESC &dev) {
@@ -2108,7 +2091,7 @@ bool print_parameter(STRUCT_RKDEVICE_DESC &dev) {
 	bool bRet, bSuccess = false;
 	int iRet;
 	u32 i, nParamSize;
-	CRKComm *pComm = NULL;
+	CRKComm *pComm = nullptr;
 	PARAM_ITEM_VECTOR vecParamItem;
 	CONFIG_ITEM_VECTOR vecUuidItem;
 	pComm = new CRKUsbComm(dev, g_pLogObject, bRet);
@@ -2149,28 +2132,26 @@ bool print_parameter(STRUCT_RKDEVICE_DESC &dev) {
 	}
 	bSuccess = true;
 Exit_PrintParam:
-	if (pComm)
-		delete pComm;
+	delete pComm;
 	return bSuccess;
 }
 
 bool erase_flash(STRUCT_RKDEVICE_DESC &dev) {
 	if (!check_device_type(dev, RKUSB_LOADER | RKUSB_MASKROM))
 		return false;
-	CRKImage *pImage = NULL;
+	CRKImage *pImage = nullptr;
 	bool bRet, bSuccess = false;
 	int iRet;
-	CRKScan *pScan = NULL;
+	CRKScan *pScan = nullptr;
 	pScan = new CRKScan();
 	pScan->SetVidPid();
 
-	CRKComm *pComm = NULL;
-	CRKDevice *pDevice = NULL;
+	CRKComm *pComm = nullptr;
+	CRKDevice *pDevice = nullptr;
 
 	pComm = new CRKUsbComm(dev, g_pLogObject, bRet);
 	if (!bRet) {
-		if (pScan)
-			delete pScan;
+		delete pScan;
 		ERROR_COLOR_ATTR;
 		printf("Creating Comm Object failed!");
 		NORMAL_COLOR_ATTR;
@@ -2180,10 +2161,8 @@ bool erase_flash(STRUCT_RKDEVICE_DESC &dev) {
 
 	pDevice = new CRKDevice(dev);
 	if (!pDevice) {
-		if (pComm)
-			delete pComm;
-		if (pScan)
-			delete pScan;
+		delete pComm;
+		delete pScan;
 		ERROR_COLOR_ATTR;
 		printf("Creating device object failed!");
 		NORMAL_COLOR_ATTR;
@@ -2197,10 +2176,8 @@ bool erase_flash(STRUCT_RKDEVICE_DESC &dev) {
 	printf("Starting to erase flash...\n");
 	bRet = pDevice->GetFlashInfo();
 	if (!bRet) {
-		if (pDevice)
-			delete pDevice;
-		if (pScan)
-			delete pScan;
+		delete pDevice;
+		delete pScan;
 		ERROR_COLOR_ATTR;
 		printf("Getting flash info from device failed!");
 		NORMAL_COLOR_ATTR;
@@ -2208,8 +2185,7 @@ bool erase_flash(STRUCT_RKDEVICE_DESC &dev) {
 		return bSuccess;
 	}
 	iRet = pDevice->EraseAllBlocks();
-	if (pDevice)
-		delete pDevice;
+	delete pDevice;
 
 	if (iRet == 0) {
 		if (pScan) {
@@ -2229,7 +2205,7 @@ bool erase_flash(STRUCT_RKDEVICE_DESC &dev) {
 bool test_device(STRUCT_RKDEVICE_DESC &dev) {
 	if (!check_device_type(dev, RKUSB_LOADER | RKUSB_MASKROM))
 		return false;
-	CRKUsbComm *pComm = NULL;
+	CRKUsbComm *pComm = nullptr;
 	bool bRet, bSuccess = false;
 	int iRet;
 	pComm = new CRKUsbComm(dev, g_pLogObject, bRet);
@@ -2249,14 +2225,14 @@ bool test_device(STRUCT_RKDEVICE_DESC &dev) {
 	}
 	if (pComm) {
 		delete pComm;
-		pComm = NULL;
+		pComm = nullptr;
 	}
 	return bSuccess;
 }
 bool reset_device(STRUCT_RKDEVICE_DESC &dev, BYTE subCode = RST_NONE_SUBCODE) {
 	if (!check_device_type(dev, RKUSB_LOADER | RKUSB_MASKROM))
 		return false;
-	CRKUsbComm *pComm = NULL;
+	CRKUsbComm *pComm = nullptr;
 	bool bRet, bSuccess = false;
 	int iRet;
 	pComm = new CRKUsbComm(dev, g_pLogObject, bRet);
@@ -2276,13 +2252,13 @@ bool reset_device(STRUCT_RKDEVICE_DESC &dev, BYTE subCode = RST_NONE_SUBCODE) {
 	}
 	if (pComm) {
 		delete pComm;
-		pComm = NULL;
+		pComm = nullptr;
 	}
 	return bSuccess;
 }
 
 bool read_flash_id(STRUCT_RKDEVICE_DESC &dev) {
-	CRKUsbComm *pComm = NULL;
+	CRKUsbComm *pComm = nullptr;
 	bool bRet, bSuccess = false;
 	int iRet;
 	if (!check_device_type(dev, RKUSB_LOADER | RKUSB_MASKROM))
@@ -2305,14 +2281,13 @@ bool read_flash_id(STRUCT_RKDEVICE_DESC &dev) {
 	} else {
 		printf("Read Flash ID quit, creating comm object failed!\n");
 	}
-	if (pComm) {
-		delete pComm;
-		pComm = NULL;
-	}
+	delete pComm;
+	pComm = nullptr;
+
 	return bSuccess;
 }
 bool read_flash_info(STRUCT_RKDEVICE_DESC &dev) {
-	CRKUsbComm *pComm = NULL;
+	CRKUsbComm *pComm = nullptr;
 	bool bRet, bSuccess = false;
 	int iRet;
 	if (!check_device_type(dev, RKUSB_LOADER | RKUSB_MASKROM))
@@ -2354,14 +2329,14 @@ bool read_flash_info(STRUCT_RKDEVICE_DESC &dev) {
 	} else {
 		printf("Read Flash Info quit, creating comm object failed!\n");
 	}
-	if (pComm) {
-		delete pComm;
-		pComm = NULL;
-	}
+
+	delete pComm;
+	pComm = nullptr;
+
 	return bSuccess;
 }
 bool read_chip_info(STRUCT_RKDEVICE_DESC &dev) {
-	CRKUsbComm *pComm = NULL;
+	CRKUsbComm *pComm = nullptr;
 	bool bRet, bSuccess = false;
 	int iRet;
 	if (!check_device_type(dev, RKUSB_LOADER | RKUSB_MASKROM))
@@ -2385,14 +2360,12 @@ bool read_chip_info(STRUCT_RKDEVICE_DESC &dev) {
 	} else {
 		printf("Read Chip Info quit, creating comm object failed!\n");
 	}
-	if (pComm) {
-		delete pComm;
-		pComm = NULL;
-	}
+	delete pComm;
+	pComm = nullptr;
 	return bSuccess;
 }
 bool read_capability(STRUCT_RKDEVICE_DESC &dev) {
-	CRKUsbComm *pComm = NULL;
+	CRKUsbComm *pComm = nullptr;
 	bool bRet, bSuccess = false;
 	int iRet;
 	if (!check_device_type(dev, RKUSB_LOADER | RKUSB_MASKROM))
@@ -2449,14 +2422,14 @@ bool read_capability(STRUCT_RKDEVICE_DESC &dev) {
 	}
 	if (pComm) {
 		delete pComm;
-		pComm = NULL;
+		pComm = nullptr;
 	}
 	return bSuccess;
 }
 bool read_param(STRUCT_RKDEVICE_DESC &dev, u8 *pParam) {
 	if (!check_device_type(dev, RKUSB_LOADER | RKUSB_MASKROM))
 		return false;
-	CRKUsbComm *pComm = NULL;
+	CRKUsbComm *pComm = nullptr;
 	bool bRet, bSuccess = false;
 	int iRet;
 	pComm = new CRKUsbComm(dev, g_pLogObject, bRet);
@@ -2478,7 +2451,7 @@ bool read_param(STRUCT_RKDEVICE_DESC &dev, u8 *pParam) {
 Exit_ReadParam:
 	if (pComm) {
 		delete pComm;
-		pComm = NULL;
+		pComm = nullptr;
 	}
 	return bSuccess;
 }
@@ -2486,8 +2459,8 @@ Exit_ReadParam:
 bool read_gpt(STRUCT_RKDEVICE_DESC &dev, u8 *pGpt) {
 	if (!check_device_type(dev, RKUSB_LOADER | RKUSB_MASKROM))
 		return false;
-	gpt_header *gptHead = (gpt_header *)(pGpt + SECTOR_SIZE);
-	CRKUsbComm *pComm = NULL;
+	auto *gptHead = (gpt_header *)(pGpt + SECTOR_SIZE);
+	CRKUsbComm *pComm = nullptr;
 	bool bRet, bSuccess = false;
 	int iRet;
 	pComm = new CRKUsbComm(dev, g_pLogObject, bRet);
@@ -2508,14 +2481,14 @@ bool read_gpt(STRUCT_RKDEVICE_DESC &dev, u8 *pGpt) {
 Exit_ReadGPT:
 	if (pComm) {
 		delete pComm;
-		pComm = NULL;
+		pComm = nullptr;
 	}
 	return bSuccess;
 }
 bool read_lba(
 		STRUCT_RKDEVICE_DESC &dev, UINT uiBegin, UINT uiLen, char *szFile) {
-	CRKUsbComm *pComm = NULL;
-	FILE *file = NULL;
+	CRKUsbComm *pComm = nullptr;
+	FILE *file = nullptr;
 	bool bRet, bFirst = true, bSuccess = false;
 	int iRet;
 	UINT iTotalRead = 0, iRead = 0;
@@ -2589,7 +2562,7 @@ bool read_lba(
 Exit_ReadLBA:
 	if (pComm) {
 		delete pComm;
-		pComm = NULL;
+		pComm = nullptr;
 	}
 	if (file)
 		fclose(file);
@@ -2597,12 +2570,12 @@ Exit_ReadLBA:
 }
 bool erase_ubi_block(STRUCT_RKDEVICE_DESC &dev, u32 uiOffset, u32 uiPartSize) {
 	STRUCT_FLASHINFO_CMD info;
-	CRKComm *pComm = NULL;
+	CRKComm *pComm = nullptr;
 	BYTE flashID[5];
 	bool bRet, bSuccess = false;
 	UINT uiReadCount, uiStartBlock, uiEraseBlock, uiBlockCount, uiErasePos;
 	int iRet;
-	DWORD *pID = NULL;
+	DWORD *pID = nullptr;
 
 	printf("Erase ubi in, offset=0x%08x,size=0x%08x!\n", uiOffset, uiPartSize);
 	if (!check_device_type(dev, RKUSB_LOADER | RKUSB_MASKROM))
@@ -2664,8 +2637,7 @@ bool erase_ubi_block(STRUCT_RKDEVICE_DESC &dev, u32 uiOffset, u32 uiPartSize) {
 	}
 	bSuccess = true;
 EXIT_UBI_ERASE:
-	if (pComm)
-		delete pComm;
+	delete pComm;
 	return bSuccess;
 }
 bool erase_partition(CRKUsbComm *pComm, UINT uiOffset, UINT uiSize) {
@@ -2720,8 +2692,8 @@ bool write_sparse_lba(
 		STRUCT_RKDEVICE_DESC &dev, UINT uiBegin, UINT uiSize, char *szFile) {
 	if (!check_device_type(dev, RKUSB_LOADER | RKUSB_MASKROM))
 		return false;
-	CRKUsbComm *pComm = NULL;
-	FILE *file = NULL;
+	CRKUsbComm *pComm = nullptr;
+	FILE *file = nullptr;
 	bool bRet, bSuccess = false, bFirst = true;
 	int iRet;
 	u64 iTotalWrite = 0, iFileSize = 0, dwChunkDataSize;
@@ -2900,7 +2872,7 @@ bool write_sparse_lba(
 Exit_WriteSparseLBA:
 	if (pComm) {
 		delete pComm;
-		pComm = NULL;
+		pComm = nullptr;
 	}
 	if (file)
 		fclose(file);
@@ -2911,8 +2883,8 @@ bool write_lba(STRUCT_RKDEVICE_DESC &dev, UINT uiBegin, char *szFile) {
 	if (!check_device_type(dev, RKUSB_LOADER | RKUSB_MASKROM))
 		return false;
 	return false;
-	CRKUsbComm *pComm = NULL;
-	FILE *file = NULL;
+	CRKUsbComm *pComm = nullptr;
+	FILE *file = nullptr;
 	bool bRet, bFirst = true, bSuccess = false;
 	int iRet;
 	long long iTotalWrite = 0, iFileSize = 0;
@@ -2972,39 +2944,15 @@ bool write_lba(STRUCT_RKDEVICE_DESC &dev, UINT uiBegin, char *szFile) {
 Exit_WriteLBA:
 	if (pComm) {
 		delete pComm;
-		pComm = NULL;
+		pComm = nullptr;
 	}
 	if (file)
 		fclose(file);
 	return bSuccess;
 }
 
-void split_item(STRING_VECTOR &vecItems, char *pszItems) {
-	string strItem;
-	char szItem[100];
-	char *pos = NULL, *pStart;
-	pStart = pszItems;
-	pos = strchr(pStart, ',');
-	while (pos != NULL) {
-		memset(szItem, 0, sizeof(szItem));
-		strncpy(szItem, pStart, pos - pStart);
-		strItem = szItem;
-		vecItems.push_back(strItem);
-		pStart = pos + 1;
-		if (*pStart == 0)
-			break;
-		pos = strchr(pStart, ',');
-	}
-	if (strlen(pStart) > 0) {
-		memset(szItem, 0, sizeof(szItem));
-		strncpy(szItem, pStart, sizeof(szItem) - 1);
-		strItem = szItem;
-		vecItems.push_back(strItem);
-	}
-}
-
 void tag_spl(char *tag, char *spl) {
-	FILE *file = NULL;
+	FILE *file = nullptr;
 	int len;
 
 	if (!tag || !spl)
@@ -3015,11 +2963,11 @@ void tag_spl(char *tag, char *spl) {
 	if (!file) {
 		return;
 	}
-	int iFileSize;
+	long iFileSize;
 	fseek(file, 0, SEEK_END);
 	iFileSize = ftell(file);
 	fseek(file, 0, SEEK_SET);
-	char *Buf = NULL;
+	char *Buf = nullptr;
 	Buf = new char[iFileSize + len + 1];
 	if (!Buf) {
 		fclose(file);
@@ -3054,8 +3002,8 @@ void tag_spl(char *tag, char *spl) {
 	delete[] taggedspl;
 	delete[] Buf;
 	printf("done\n");
-	return;
 }
+
 void list_device(CRKScan *pScan) {
 	STRUCT_RKDEVICE_DESC desc;
 	string strDevType;
@@ -3391,12 +3339,12 @@ bool handle_command(int argc, char *argv[], CRKScan *pScan) {
 }
 
 int main(int argc, char *argv[]) {
-	CRKScan *pScan = NULL;
+	CRKScan *pScan = nullptr;
 	int ret;
 	char szProgramProcPath[100];
 	char szProgramDir[256];
 	string strLogDir, strConfigFile;
-	struct stat statBuf;
+	struct stat statBuf{};
 
 	g_ConfigItemVec.clear();
 	sprintf(szProgramProcPath, "/proc/%d/exe", getpid());
@@ -3412,9 +3360,9 @@ int main(int argc, char *argv[]) {
 	strLogDir += "/log/";
 	strConfigFile = szProgramDir;
 	strConfigFile += "/config.ini";
-	if (opendir(strLogDir.c_str()) == NULL)
+	if (opendir(strLogDir.c_str()) == nullptr)
 		mkdir(strLogDir.c_str(), S_IRWXU | S_IRWXG | S_IROTH);
-	g_pLogObject = new CRKLog(strLogDir.c_str(), "log", true);
+	g_pLogObject = new CRKLog(strLogDir, "log", true);
 
 	if (stat(strConfigFile.c_str(), &statBuf) < 0) {
 		if (g_pLogObject) {
@@ -3425,7 +3373,7 @@ int main(int argc, char *argv[]) {
 		parse_config_file(strConfigFile.c_str(), g_ConfigItemVec);
 	}
 
-	ret = libusb_init(NULL);
+	ret = libusb_init(nullptr);
 	if (ret < 0) {
 		if (g_pLogObject) {
 			g_pLogObject->Record("Error: libusb_init failed, err=%d", ret);
@@ -3441,7 +3389,7 @@ int main(int argc, char *argv[]) {
 					"Error: failed to create object for searching device");
 			delete g_pLogObject;
 		}
-		libusb_exit(NULL);
+		libusb_exit(nullptr);
 		return -2;
 	}
 	pScan->SetVidPid();
@@ -3450,10 +3398,10 @@ int main(int argc, char *argv[]) {
 		usage();
 	else if (!handle_command(argc, argv, pScan))
 		return -0xFF;
-	if (pScan)
-		delete pScan;
-	if (g_pLogObject)
-		delete g_pLogObject;
+
+	delete pScan;
+	delete g_pLogObject;
+
 	libusb_exit(NULL);
 	return 0;
 }
