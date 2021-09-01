@@ -3270,7 +3270,7 @@ bool handle_command(int argc, char* argv[], CRKScan *pScan)
 			
 		} else
 			printf("Usage: rkdeveloptool write-partition partition-name filename\r\n");
-	} else if (strcmp(strCmd.c_str(), "RL") == 0 || strcmp(strCmd.c_str(), "READ-PARTITION") == 0) {
+	} else if (strcmp(strCmd.c_str(), "RLX") == 0 || strcmp(strCmd.c_str(), "READ-PARTITION") == 0) {
 		char *pszEnd;
 		UINT uiBegin, uiLen;
 		if (argc != 4)
