@@ -50,6 +50,7 @@ void usage()
 	printf("  list                  List the detected devices in rockusb mode\n");
 	printf("  list-partitions       List the GPT partition table on the storage\n");
 	printf("  read                  Read sectors from the internal storage\n");
+	printf("  read-partition        Read a partition from the internal storage\n");
 	printf("  write                 Write sectors from to internal storage\n");
 	printf("  write-partition       Write an image to a specific partition\n");
 	printf("  write-partition-table Write an image to a specific partition\n");
@@ -3269,6 +3270,24 @@ bool handle_command(int argc, char* argv[], CRKScan *pScan)
 			
 		} else
 			printf("Usage: rkdeveloptool write-partition partition-name filename\r\n");
+	} else if (strcmp(strCmd.c_str(), "RL") == 0 || strcmp(strCmd.c_str(), "READ-PARTITION") == 0) {
+		char *pszEnd;
+		UINT uiBegin, uiLen;
+		if (argc != 4)
+			printf("Usage: rkdeveloptool read-partition partition filename\r\n");
+		else {
+			bRet = read_gpt(dev, master_gpt);
+			if (bRet) {
+				bRet = get_lba_from_gpt(master_gpt, argv[2], &lba, &lba_end);
+				if (bRet) {
+					bSuccess = read_lba(dev, (u32)lba, ((u32)(lba_end - lba + 1)) * 512, argv[3]);
+				} else {
+					printf("Could not find the %s partition\n", argv[2]);
+				}
+			} else {
+				printf("The device does not have a partition table!\n");
+			}
+		}
 	} else if (strcmp(strCmd.c_str(), "RL") == 0 || strcmp(strCmd.c_str(), "READ") == 0) {
 		char *pszEnd;
 		UINT uiBegin, uiLen;
