@@ -533,6 +533,7 @@ void prepare_gpt_backup(u8 *master, u8 *backup)
 	calc_crc32 = crc32_le(0, (unsigned char *)gptBackupHead, le32_to_cpu(gptBackupHead->header_size));
 	gptBackupHead->header_crc32 = cpu_to_le32(calc_crc32);
 }
+
 bool get_lba_from_gpt(u8 *master, char *pszName, u64 *lba, u64 *lba_end)
 {
 	gpt_header *gptMasterHead = (gpt_header *)(master + SECTOR_SIZE);
@@ -2886,10 +2887,22 @@ Exit_WriteSparseLBA:
 	
 }
 
+u64 get_file_size(char *szFile) {
+	FILE *file = NULL;
+	u64 size;
+
+	file = fopen(szFile, "rb");
+	fseek(file, 0L, SEEK_END);
+	size = ftell(file);
+	fclose(file);
+	return size;
+}
+
 bool write_lba(STRUCT_RKDEVICE_DESC &dev, UINT uiBegin, char *szFile)
 {
 	if (!check_device_type(dev, RKUSB_LOADER | RKUSB_MASKROM))
 		return false;
+	return false;
 	CRKUsbComm *pComm = NULL;
 	FILE *file = NULL;
 	bool bRet, bFirst = true, bSuccess = false;
@@ -3232,18 +3245,26 @@ bool handle_command(int argc, char* argv[], CRKScan *pScan)
 						bSuccess = true;
 						if (is_ubifs_image(argv[3]))
 						{
-							if (lba_end == 0xFFFFFFFF)
+							if (lba_end == 0xFFFFFFFF) {
 								bSuccess = erase_ubi_block(dev, (u32)lba, (u32)lba_end);
-							else
+							} else {
 								bSuccess = erase_ubi_block(dev, (u32)lba, (u32)(lba_end - lba + 1));
+							}
+							if(!bSuccess) {
+								printf("Failure of Erase for writing ubi image!\n");
+							}
 						}
-						if (bSuccess)
-							bSuccess = write_lba(dev, (u32)lba, argv[3]);
-						else
-							printf("Failure of Erase for writing ubi image!\r\n");
+						if (bSuccess) {
+							if ((lba_end-lba+1)*512 < get_file_size(argv[3])) {
+								printf("The file is larger than the targeted partition\n");
+								bSuccess = false;
+							} else {
+								bSuccess = write_lba(dev, (u32)lba, argv[3]);
+							}
+						}
 					}
 				} else
-					printf("No found %s partition\r\n", argv[2]);
+					printf("Partition '%s' not found\n", argv[2]);
 			} else {
 				bRet = read_param(dev, param_buffer);
 				if (bRet) {
