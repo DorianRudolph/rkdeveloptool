@@ -16,7 +16,7 @@
 #include "config.h"
 #include "gpt.h"
 extern const char *szManufName[];
-CRKLog *g_pLogObject = NULL;
+CRKLog *g_pLogObject = nullptr;
 CONFIG_ITEM_VECTOR g_ConfigItemVec;
 #define DEFAULT_RW_LBA 128
 #define CURSOR_MOVEUP_LINE(n) printf("%c[%dA", 0x1B, n)
@@ -66,7 +66,7 @@ void usage() {
 }
 void ProgressInfoProc(DWORD deviceLayer, ENUM_PROGRESS_PROMPT promptID,
 		long long totalValue, long long currentValue, ENUM_CALL_STEP emCall) {
-	string strInfoText = "";
+	string strInfoText;
 	char szText[256];
 	switch (promptID) {
 	case TESTDEVICE_PROGRESS:
@@ -117,7 +117,7 @@ void ProgressInfoProc(DWORD deviceLayer, ENUM_PROGRESS_PROMPT promptID,
 		strInfoText = szText;
 		break;
 	}
-	if (strInfoText.size() > 0) {
+	if (!strInfoText.empty()) {
 		CURSOR_MOVEUP_LINE(1);
 		CURSOR_DEL_LINE;
 		printf("%s\n", strInfoText.c_str());
@@ -140,22 +140,6 @@ long get_file_size(const char *path) {
 	size = ftell(file);
 	fclose(file);
 	return size;
-}
-
-void print_data(PBYTE pData, int nSize) {
-	char szPrint[17] = "\0";
-	int i;
-	for (i = 0; i < nSize; i++) {
-		if (i % 16 == 0) {
-			if (i / 16 > 0)
-				printf("     %s\n", szPrint);
-			printf("%08d ", i / 16);
-		}
-		printf("%02X ", pData[i]);
-		szPrint[i % 16] = isprint(pData[i]) ? pData[i] : '.';
-	}
-	if (i / 16 > 0)
-		printf("     %s\n", szPrint);
 }
 
 int find_config_item(CONFIG_ITEM_VECTOR &vecItems, const char *pszName) {
@@ -872,8 +856,8 @@ bool make_param_buffer(char *pParamFile, char *&pParamData) {
 	if (iRead != iFileSize) {
 		if (g_pLogObject)
 			g_pLogObject->Record(
-					"make_param_buffer failed,err=%d,read=%d,total=%d\n",
-					errno, iRead, iFileSize);
+					"make_param_buffer failed,err=%d,read=%d,total=%d\n", errno,
+					iRead, iFileSize);
 		fclose(file);
 		delete[] pParamBuf;
 		return false;
@@ -2592,8 +2576,7 @@ bool read_lba(
 						printf("Read LBA to file (%d%%)\n",
 								iTotalRead * 100 / (uiLen + iTotalRead));
 				}
-			} else
-				print_data(pBuf, nSectorSize * iRead);
+			}
 		} else {
 			if (g_pLogObject)
 				g_pLogObject->Record("Error: RKU_ReadLBA failed, err=%d", iRet);
@@ -2621,8 +2604,7 @@ bool erase_ubi_block(STRUCT_RKDEVICE_DESC &dev, u32 uiOffset, u32 uiPartSize) {
 	int iRet;
 	DWORD *pID = NULL;
 
-	printf("Erase ubi in, offset=0x%08x,size=0x%08x!\n", uiOffset,
-			uiPartSize);
+	printf("Erase ubi in, offset=0x%08x,size=0x%08x!\n", uiOffset, uiPartSize);
 	if (!check_device_type(dev, RKUSB_LOADER | RKUSB_MASKROM))
 		return false;
 	pComm = new CRKUsbComm(dev, g_pLogObject, bRet);
@@ -2754,8 +2736,8 @@ bool write_sparse_lba(
 
 		file = fopen(szFile, "rb");
 		if (!file) {
-			printf("%s failed, err=%d, can't open file: %s\n", __func__,
-					errno, szFile);
+			printf("%s failed, err=%d, can't open file: %s\n", __func__, errno,
+					szFile);
 			goto Exit_WriteSparseLBA;
 		}
 		fseeko(file, 0, SEEK_SET);
