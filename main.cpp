@@ -3273,7 +3273,7 @@ bool handle_command(int argc, char* argv[], CRKScan *pScan)
 		char *pszEnd;
 		UINT uiBegin, uiLen;
 		if (argc != 5)
-			printf("Usage: rkdeveloptool read start-sector num-sectors filename\r\n");
+			printf("Usage: rkdeveloptool read start-sector num-bytes filename\r\n");
 		else {
 			uiBegin = strtoul(argv[2], &pszEnd, 0);
 			if (*pszEnd)
