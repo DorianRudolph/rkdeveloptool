@@ -1,5 +1,8 @@
+cmake_minimum_required (VERSION 3.0)
+
 # Project name
 set (PROJECT_NAME "rkdeveloptool")
+project (${PROJECT_NAME} VERSION 1.0.0)
 
 # The version number.
 set (rkdeveloptool_PACKAGE_VERSION "1.3")
@@ -8,11 +11,7 @@ file (GLOB LOCAL_CPP_FILES *.cpp)
 set (SOURCE_FILES ${SOURCE_FILES} ${LOCAL_CPP_FILES})
 
 file (GLOB LOCAL_H_FILES *.h)
-set (HEADER_FILES ${HEADER_FILES} ${LOCAL_H_FILES} config.h)
-
-project (${PROJECT_NAME})
-
-cmake_minimum_required (VERSION 2.6)
+set (HEADER_FILES ${HEADER_FILES} ${LOCAL_H_FILES})
 
 # Turn off build log
 # set (CMAKE_VERBOSE_MAKEFILE ON)
