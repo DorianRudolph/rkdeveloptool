@@ -6,53 +6,42 @@
  */
 #include "RKImage.h"
 
-DWORD CRKImage::GetVersion()
-{
+DWORD CRKImage::GetVersion() {
 	return m_version;
 }
-DWORD CRKImage::GetMergeVersion()
-{
+DWORD CRKImage::GetMergeVersion() {
 	return m_mergeVersion;
 }
-STRUCT_RKTIME CRKImage::GetReleaseTime()
-{
+STRUCT_RKTIME CRKImage::GetReleaseTime() {
 	return m_releaseTime;
 }
-ENUM_RKDEVICE_TYPE CRKImage::GetSupportDevice()
-{
+ENUM_RKDEVICE_TYPE CRKImage::GetSupportDevice() {
 	return m_supportDevice;
 }
-ENUM_OS_TYPE CRKImage::GetOsType()
-{
+ENUM_OS_TYPE CRKImage::GetOsType() {
 	UINT *pOsType;
 	pOsType = (UINT *)&m_reserved[4];
 	return (ENUM_OS_TYPE)*pOsType;
 }
 
-USHORT CRKImage::GetBackupSize()
-{
+USHORT CRKImage::GetBackupSize() {
 	USHORT *pBackupSize;
 	pBackupSize = (USHORT *)&m_reserved[12];
 	return *pBackupSize;
 }
-DWORD CRKImage::GetBootOffset()
-{
+DWORD CRKImage::GetBootOffset() {
 	return m_bootOffset;
 }
-DWORD CRKImage::GetBootSize()
-{
+DWORD CRKImage::GetBootSize() {
 	return m_bootSize;
 }
-DWORD CRKImage::GetFWOffset()
-{
+DWORD CRKImage::GetFWOffset() {
 	return m_fwOffset;
 }
-long long CRKImage::GetFWSize()
-{
+long long CRKImage::GetFWSize() {
 	return m_fwSize;
 }
-bool CRKImage::SaveBootFile(string filename)
-{
+bool CRKImage::SaveBootFile(string filename) {
 	FILE *file = NULL;
 	int iRead;
 	file = fopen(filename.c_str(), "wb+");
@@ -73,12 +62,11 @@ bool CRKImage::SaveBootFile(string filename)
 		}
 		fwrite(buffer, 1, dwReadSize, file);
 		dwBootSize -= dwReadSize;
-	} while(dwBootSize > 0);
+	} while (dwBootSize > 0);
 	fclose(file);
 	return true;
 }
-bool CRKImage::SaveFWFile(string filename)
-{
+bool CRKImage::SaveFWFile(string filename) {
 	FILE *file = NULL;
 	int iRead;
 	file = fopen(filename.c_str(), "wb+");
@@ -103,30 +91,27 @@ bool CRKImage::SaveFWFile(string filename)
 	fclose(file);
 	return true;
 }
-bool CRKImage::GetData(long long dwOffset, DWORD dwSize, PBYTE lpBuffer)
-{
-	if ( (dwOffset < 0) || (dwSize == 0) ) {
+bool CRKImage::GetData(long long dwOffset, DWORD dwSize, PBYTE lpBuffer) {
+	if ((dwOffset < 0) || (dwSize == 0)) {
 		return false;
 	}
-	if ( dwOffset+dwSize > m_fileSize) {
+	if (dwOffset + dwSize > m_fileSize) {
 		return false;
 	}
 	fseeko(m_pFile, dwOffset, SEEK_SET);
 	UINT uiActualRead;
-	uiActualRead = fread(lpBuffer,1, dwSize, m_pFile);
-	if (dwSize != uiActualRead){
+	uiActualRead = fread(lpBuffer, 1, dwSize, m_pFile);
+	if (dwSize != uiActualRead) {
 		return false;
 	}
 	return true;
 }
-void CRKImage::GetReservedData(PBYTE &lpData, USHORT &usSize)
-{
+void CRKImage::GetReservedData(PBYTE &lpData, USHORT &usSize) {
 	lpData = m_reserved;
 	usSize = IMAGE_RESERVED_SIZE;
 }
 
-CRKImage::CRKImage(string filename, bool &bCheck)
-{
+CRKImage::CRKImage(string filename, bool &bCheck) {
 	Version.setContainer(this);
 	Version.getter(&CRKImage::GetVersion);
 	MergeVersion.setContainer(this);
@@ -160,7 +145,7 @@ CRKImage::CRKImage(string filename, bool &bCheck)
 
 	char szName[256];
 	strcpy(szName, filename.c_str());
-	if(stat(szName, &statBuf) < 0) {
+	if (stat(szName, &statBuf) < 0) {
 		bCheck = false;
 		return;
 	}
@@ -170,8 +155,9 @@ CRKImage::CRKImage(string filename, bool &bCheck)
 	}
 	m_fileSize = statBuf.st_size;
 
-	bool bOnlyBootFile=false;
-	transform(filename.begin(), filename.end(), filename.begin(), (int(*)(int))tolower);
+	bool bOnlyBootFile = false;
+	transform(filename.begin(), filename.end(), filename.begin(),
+			(int (*)(int))tolower);
 	if (filename.find(".bin") != string::npos) {
 		bOnlyBootFile = true;
 	}
@@ -187,16 +173,18 @@ CRKImage::CRKImage(string filename, bool &bCheck)
 	STRUCT_RKIMAGE_HEAD imageHead;
 	if (!bOnlyBootFile) {
 		fseeko(m_pFile, 0, SEEK_SET);
-		iRead = fread((PBYTE)(&imageHead), 1, sizeof(STRUCT_RKIMAGE_HEAD), m_pFile);
+		iRead = fread(
+				(PBYTE)(&imageHead), 1, sizeof(STRUCT_RKIMAGE_HEAD), m_pFile);
 		if (iRead != sizeof(STRUCT_RKIMAGE_HEAD)) {
 			bCheck = false;
 			return;
 		}
-		if ( imageHead.uiTag != 0x57464B52 ) {
+		if (imageHead.uiTag != 0x57464B52) {
 			bCheck = false;
 			return;
 		}
-		if ((imageHead.reserved[14] == 'H') && (imageHead.reserved[15] == 'I')) {
+		if ((imageHead.reserved[14] == 'H') &&
+				(imageHead.reserved[15] == 'I')) {
 			ulFwSize = *((DWORD *)(&imageHead.reserved[16]));
 			ulFwSize <<= 32;
 			ulFwSize += imageHead.dwFWOffset;
@@ -270,8 +258,7 @@ CRKImage::CRKImage(string filename, bool &bCheck)
 	}
 	bCheck = true;
 }
-CRKImage::~CRKImage()
-{
+CRKImage::~CRKImage() {
 	if (m_pFile) {
 		fclose(m_pFile);
 		m_pFile = NULL;
@@ -282,17 +269,14 @@ CRKImage::~CRKImage()
 	}
 }
 
-long long CRKImage::GetImageSize()
-{
+long long CRKImage::GetImageSize() {
 	return m_fileSize;
 }
-int CRKImage::GetMd5Data(PBYTE &lpMd5, PBYTE &lpSignMd5)
-{
+int CRKImage::GetMd5Data(PBYTE &lpMd5, PBYTE &lpSignMd5) {
 	lpMd5 = m_md5;
 	lpSignMd5 = m_signMd5;
 	return m_signMd5Size;
 }
-bool CRKImage::GetSignFlag()
-{
+bool CRKImage::GetSignFlag() {
 	return m_bSignFlag;
 }

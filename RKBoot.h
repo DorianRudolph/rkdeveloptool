@@ -2,13 +2,13 @@
 #define RKBOOT_HEADER
 #include "DefineHeader.h"
 
-#define  BOOT_RESERVED_SIZE 57
+#define BOOT_RESERVED_SIZE 57
 #pragma pack(1)
-typedef struct  {
+typedef struct {
 	UINT uiTag;
 	USHORT usSize;
-	DWORD  dwVersion;
-	DWORD  dwMergeVersion;
+	DWORD dwVersion;
+	DWORD dwMergeVersion;
 	STRUCT_RKTIME stReleaseTime;
 	ENUM_RKDEVICE_TYPE emSupportChip;
 	UCHAR uc471EntryCount;
@@ -25,7 +25,7 @@ typedef struct  {
 	UCHAR reserved[BOOT_RESERVED_SIZE];
 } STRUCT_RKBOOT_HEAD, *PSTRUCT_RKBOOT_HEAD;
 
-typedef struct  {
+typedef struct {
 	UCHAR ucSize;
 	ENUM_RKBOOTENTRY emType;
 	WCHAR szName[20];
@@ -34,37 +34,38 @@ typedef struct  {
 	DWORD dwDataDelay;
 } STRUCT_RKBOOT_ENTRY, *PSTRUCT_RKBOOT_ENTRY;
 
-
 #pragma pack()
 class CRKBoot {
-public:
+  public:
 	bool GetRc4DisableFlag();
- 	property<CRKBoot, bool, READ_ONLY> Rc4DisableFlag;
+	property<CRKBoot, bool, READ_ONLY> Rc4DisableFlag;
 	bool GetSignFlag();
- 	property<CRKBoot, bool, READ_ONLY> SignFlag;
+	property<CRKBoot, bool, READ_ONLY> SignFlag;
 	UINT GetVersion();
- 	property<CRKBoot, UINT, READ_ONLY> Version;
+	property<CRKBoot, UINT, READ_ONLY> Version;
 	UINT GetMergeVersion();
- 	property<CRKBoot, UINT, READ_ONLY> MergeVersion;
+	property<CRKBoot, UINT, READ_ONLY> MergeVersion;
 	STRUCT_RKTIME GetReleaseTime();
- 	property<CRKBoot, STRUCT_RKTIME, READ_ONLY> ReleaseTime;
+	property<CRKBoot, STRUCT_RKTIME, READ_ONLY> ReleaseTime;
 	ENUM_RKDEVICE_TYPE GetSupportDevice();
- 	property<CRKBoot, ENUM_RKDEVICE_TYPE, READ_ONLY> SupportDevice;
+	property<CRKBoot, ENUM_RKDEVICE_TYPE, READ_ONLY> SupportDevice;
 	unsigned char GetEntry471Count();
- 	property<CRKBoot, unsigned char, READ_ONLY> Entry471Count;
+	property<CRKBoot, unsigned char, READ_ONLY> Entry471Count;
 	unsigned char GetEntry472Count();
- 	property<CRKBoot, unsigned char, READ_ONLY> Entry472Count;
+	property<CRKBoot, unsigned char, READ_ONLY> Entry472Count;
 	unsigned char GetEntryLoaderCount();
- 	property<CRKBoot, unsigned char, READ_ONLY> EntryLoaderCount;
+	property<CRKBoot, unsigned char, READ_ONLY> EntryLoaderCount;
 	bool CrcCheck();
 	bool SaveEntryFile(ENUM_RKBOOTENTRY type, UCHAR ucIndex, string fileName);
-	bool GetEntryProperty(ENUM_RKBOOTENTRY type, UCHAR ucIndex, DWORD &dwSize, DWORD &dwDelay, char *pName = NULL);
+	bool GetEntryProperty(ENUM_RKBOOTENTRY type, UCHAR ucIndex, DWORD &dwSize,
+			DWORD &dwDelay, char *pName = NULL);
 	char GetIndexByName(ENUM_RKBOOTENTRY type, char *pName);
 	bool GetEntryData(ENUM_RKBOOTENTRY type, UCHAR ucIndex, PBYTE lpData);
 	CRKBoot(PBYTE lpBootData, DWORD dwBootSize, bool &bCheck);
 	~CRKBoot();
-protected:
-private:
+
+  protected:
+  private:
 	bool m_bRc4Disable;
 	bool m_bSignFlag;
 	DWORD m_version;
@@ -80,7 +81,7 @@ private:
 	DWORD m_loaderOffset;
 	UCHAR m_loaderSize;
 	UCHAR m_loaderCount;
-	BYTE  m_crc[4];
+	BYTE m_crc[4];
 	PBYTE m_BootData;
 	DWORD m_BootSize;
 	USHORT m_BootHeadSize;
