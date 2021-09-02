@@ -55,6 +55,9 @@ void usage() {
 	printf("  test-device           Tests the device\n");
 	printf("  upgrade-loader        Write a new rockusb loader\n");
 	printf("  reset                 Send a reset command\n");
+	printf("  reboot                Send a reboot command, alias of reset\n");
+	printf("  reboot-maskrom        Trigger reboot into maskrom mode\n");
+	printf("  shutdown              Reset without rebooting\n");
 	printf("  read-flash-id         Read the flash chip serial number\n");
 	printf("  read-flash-info       Show information about the internal "
 		   "storage\n");
@@ -3047,6 +3050,12 @@ bool handle_command(int argc, char *argv[], CRKScan *pScan) {
 				}
 			}
 		}
+	} else if (strcmp(strCmd.c_str(), "REBOOT") == 0) {
+		bSuccess = reset_device(dev, RST_NONE_SUBCODE);
+	} else if (strcmp(strCmd.c_str(), "REBOOT-MASKROM") == 0) {
+		bSuccess = reset_device(dev, RST_RESETMASKROM_SUBCODE);
+	} else if (strcmp(strCmd.c_str(), "SHUTDOWN") == 0) {
+		bSuccess = reset_device(dev, RST_POWEROFF_SUBCODE);
 	} else if (strcmp(strCmd.c_str(), "TD") == 0 ||
 			strcmp(strCmd.c_str(), "TEST-DEVICE") == 0) {
 		bSuccess = test_device(dev);

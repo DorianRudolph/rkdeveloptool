@@ -10,9 +10,9 @@ rkdeveloptool [OPTIONS] COMMAND [ARGS]...
 
 COMMAND := {list | list-partitions | read | read-partition | write |
 write-partition | write-partition-table | write-parameter |
-erase-flash | boot | test-device | upgrade-loader | reset |
-read-flash-id | read-flash-info | read-chip-info | read-capability |
-pack | unpack | tag-spl }
+erase-flash | boot | test-device | upgrade-loader | reset | reboot |
+reboot-maskrom | shutdown | read-flash-id | read-flash-info | read-chip-info |
+read-capability | pack | unpack | tag-spl }
 
 OPTIONS := { -h | -v }
 
@@ -71,6 +71,15 @@ bootloader mode
 *reset* [SUBCODE]
 	Reset the device. Optionally with a subcode which is a number between 0
 	and 5
+
+*reboot*
+	Reboot the device, this is an alias for *reset 0*
+
+*reboot-maskrom*
+	Reset the device and trigger maskrom mode
+
+*shutdown*
+	Reset device without triggering a reboot
 
 *read-flash-id*
 	Read the eMMC flash id
