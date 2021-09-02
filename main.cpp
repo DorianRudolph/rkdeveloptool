@@ -143,7 +143,7 @@ long get_file_size(const char *path) {
 }
 
 int find_config_item(CONFIG_ITEM_VECTOR &vecItems, const char *pszName) {
-	int i;
+	size_t i;
 	for (i = 0; i < vecItems.size(); i++) {
 		if (strcasecmp(pszName, vecItems[i].szItemName) == 0) {
 			return i;
@@ -3169,7 +3169,7 @@ bool handle_command(int argc, char *argv[], CRKScan *pScan) {
 						}
 						if (bSuccess) {
 							if ((lba_end - lba + 1) * 512 <
-									get_file_size(argv[3])) {
+									(unsigned) get_file_size(argv[3])) {
 								fprintf(stderr,
 										"The file is larger than the targeted "
 										"partition\n");
@@ -3216,8 +3216,6 @@ bool handle_command(int argc, char *argv[], CRKScan *pScan) {
 					"filename\n");
 	} else if (strcmp(strCmd.c_str(), "RLX") == 0 ||
 			strcmp(strCmd.c_str(), "READ-PARTITION") == 0) {
-		char *pszEnd;
-		UINT uiBegin, uiLen;
 		if (argc != 4)
 			fprintf(stderr,
 					"Usage: rkdeveloptool read-partition partition "
