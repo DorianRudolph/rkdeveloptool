@@ -15,6 +15,15 @@
 #include "RKScan.h"
 #include "config.h"
 #include "gpt.h"
+#include "boot_merger.h"
+
+#define ENTRY_ALIGN (2048)
+options gOpts;
+
+char gSubfix[MAX_LINE_LEN] = OUT_SUBFIX;
+char *gConfigPath;
+uint8_t gBuf[MAX_MERGE_SIZE];
+
 extern const char *szManufName[];
 CRKLog *g_pLogObject = nullptr;
 CONFIG_ITEM_VECTOR g_ConfigItemVec;
@@ -67,6 +76,7 @@ void usage() {
 	printf("  unpack                Unpack bootloader\n");
 	printf("  tag-spl               Tag U-Boot SPL\n");
 }
+
 void ProgressInfoProc(DWORD deviceLayer, ENUM_PROGRESS_PROMPT promptID,
 		long long totalValue, long long currentValue, ENUM_CALL_STEP emCall) {
 	string strInfoText;
@@ -154,6 +164,7 @@ int find_config_item(CONFIG_ITEM_VECTOR &vecItems, const char *pszName) {
 	}
 	return -1;
 }
+
 void string_to_uuid(string strUUid, char *uuid) {
 	unsigned int i;
 	char value;
@@ -220,6 +231,7 @@ bool parse_config(char *pConfig, CONFIG_ITEM_VECTOR &vecItem) {
 	}
 	return true;
 }
+
 bool parse_config_file(const char *pConfigFile, CONFIG_ITEM_VECTOR &vecItem) {
 	FILE *file = nullptr;
 	file = fopen(pConfigFile, "rb");
@@ -256,6 +268,7 @@ bool parse_config_file(const char *pConfigFile, CONFIG_ITEM_VECTOR &vecItem) {
 	delete[] pConfigBuf;
 	return bRet;
 }
+
 bool parse_partition_info(
 		string &strPartInfo, string &strName, UINT &uiOffset, UINT &uiLen) {
 	string::size_type pos, prevPos;
@@ -304,6 +317,7 @@ bool parse_partition_info(
 
 	return true;
 }
+
 bool parse_uuid_info(string &strUuidInfo, string &strName, string &strUUid) {
 	string::size_type pos(0);
 
@@ -408,6 +422,7 @@ bool parse_parameter(char *pParameter, PARAM_ITEM_VECTOR &vecItem,
 	}
 	return bFind;
 }
+
 bool parse_parameter_file(char *pParamFile, PARAM_ITEM_VECTOR &vecItem,
 		CONFIG_ITEM_VECTOR &vecUuidItem) {
 	FILE *file = nullptr;
@@ -444,6 +459,7 @@ bool parse_parameter_file(char *pParamFile, PARAM_ITEM_VECTOR &vecItem,
 	delete[] pParamBuf;
 	return bRet;
 }
+
 bool is_sparse_image(char *szImage) {
 	FILE *file = nullptr;
 	sparse_header head;
@@ -466,6 +482,7 @@ bool is_sparse_image(char *szImage) {
 	fclose(file);
 	return head.magic == SPARSE_HEADER_MAGIC;
 }
+
 bool is_ubifs_image(char *szImage) {
 	FILE *file = nullptr;
 	u32 magic;
@@ -488,6 +505,7 @@ bool is_ubifs_image(char *szImage) {
 	fclose(file);
 	return magic == UBI_HEADER_MAGIC;
 }
+
 void gen_rand_uuid(unsigned char *uuid_bin) {
 	efi_guid_t id;
 	auto *ptr = (unsigned int *)&id;
@@ -556,6 +574,7 @@ bool get_lba_from_gpt(u8 *master, char *pszName, u64 *lba, u64 *lba_end) {
 	}
 	return false;
 }
+
 bool get_lba_from_param(
 		u8 *param, char *pszName, u32 *part_offset, u32 *part_size) {
 	u32 i;
@@ -617,6 +636,7 @@ void update_gpt_disksize(u8 *master, u8 *backup, u32 total_sector) {
 			SECTOR_SIZE);
 	prepare_gpt_backup(master, backup);
 }
+
 bool load_gpt_buffer(char *pParamFile, u8 *master, u8 *backup) {
 	FILE *file = nullptr;
 	file = fopen(pParamFile, "rb");
@@ -660,6 +680,7 @@ bool load_gpt_buffer(char *pParamFile, u8 *master, u8 *backup) {
 	fclose(file);
 	return true;
 }
+
 void create_gpt_buffer(u8 *gpt, PARAM_ITEM_VECTOR &vecParts,
 		CONFIG_ITEM_VECTOR &vecUuid, u64 diskSectors) {
 	auto *mbr = (legacy_mbr *)gpt;
@@ -723,6 +744,7 @@ void create_gpt_buffer(u8 *gpt, PARAM_ITEM_VECTOR &vecParts,
 	gptHead->header_crc32 =
 			cpu_to_le32(crc32_le(0, gpt + SECTOR_SIZE, sizeof(gpt_header)));
 }
+
 bool make_sector_0(PBYTE pSector, USHORT usFlashDataSec, USHORT usFlashBootSec,
 		bool rc4Flag) {
 	PRK28_IDB_SEC0 pSec0;
@@ -820,6 +842,7 @@ bool check_device_type(STRUCT_RKDEVICE_DESC &dev, UINT uiSupportType) {
 		return false;
 	}
 }
+
 bool make_param_buffer(char *pParamFile, char *&pParamData) {
 	FILE *file = nullptr;
 	file = fopen(pParamFile, "rb");
@@ -966,14 +989,6 @@ bool write_gpt(STRUCT_RKDEVICE_DESC &dev, char *szParameter) {
 	printf("Writing gpt succeeded.\n");
 	return bSuccess;
 }
-
-#include "boot_merger.h"
-#define ENTRY_ALIGN (2048)
-options gOpts;
-
-char gSubfix[MAX_LINE_LEN] = OUT_SUBFIX;
-char *gConfigPath;
-uint8_t gBuf[MAX_MERGE_SIZE];
 
 static inline void fix_path(char *path) {
 	int i, len = strlen(path);
@@ -1774,6 +1789,7 @@ bool download_boot(STRUCT_RKDEVICE_DESC &dev, char *szLoader) {
 	}
 	return bSuccess;
 }
+
 bool upgrade_loader(STRUCT_RKDEVICE_DESC &dev, char *szLoader) {
 	if (!check_device_type(dev, RKUSB_MASKROM))
 		return false;
@@ -1972,6 +1988,7 @@ Exit_UpgradeLoader:
 	delete[] pIDBData;
 	return bSuccess;
 }
+
 bool print_gpt(STRUCT_RKDEVICE_DESC &dev) {
 	if (!check_device_type(dev, RKUSB_LOADER | RKUSB_MASKROM))
 		return false;
@@ -2029,6 +2046,7 @@ Exit_PrintGpt:
 	delete pComm;
 	return bSuccess;
 }
+
 bool print_parameter(STRUCT_RKDEVICE_DESC &dev) {
 	if (!check_device_type(dev, RKUSB_LOADER | RKUSB_MASKROM))
 		return false;
@@ -2162,6 +2180,7 @@ bool test_device(STRUCT_RKDEVICE_DESC &dev) {
 	}
 	return bSuccess;
 }
+
 bool reset_device(STRUCT_RKDEVICE_DESC &dev, BYTE subCode = RST_NONE_SUBCODE) {
 	if (!check_device_type(dev, RKUSB_LOADER | RKUSB_MASKROM))
 		return false;
@@ -2219,6 +2238,7 @@ bool read_flash_id(STRUCT_RKDEVICE_DESC &dev) {
 
 	return bSuccess;
 }
+
 bool read_flash_info(STRUCT_RKDEVICE_DESC &dev) {
 	CRKUsbComm *pComm = nullptr;
 	bool bRet, bSuccess = false;
@@ -2268,6 +2288,7 @@ bool read_flash_info(STRUCT_RKDEVICE_DESC &dev) {
 
 	return bSuccess;
 }
+
 bool read_chip_info(STRUCT_RKDEVICE_DESC &dev) {
 	CRKUsbComm *pComm = nullptr;
 	bool bRet, bSuccess = false;
@@ -2297,6 +2318,7 @@ bool read_chip_info(STRUCT_RKDEVICE_DESC &dev) {
 	pComm = nullptr;
 	return bSuccess;
 }
+
 bool read_capability(STRUCT_RKDEVICE_DESC &dev) {
 	CRKUsbComm *pComm = nullptr;
 	bool bRet, bSuccess = false;
@@ -2359,6 +2381,7 @@ bool read_capability(STRUCT_RKDEVICE_DESC &dev) {
 	}
 	return bSuccess;
 }
+
 bool read_param(STRUCT_RKDEVICE_DESC &dev, u8 *pParam) {
 	if (!check_device_type(dev, RKUSB_LOADER | RKUSB_MASKROM))
 		return false;
@@ -2418,6 +2441,7 @@ Exit_ReadGPT:
 	}
 	return bSuccess;
 }
+
 bool read_lba(
 		STRUCT_RKDEVICE_DESC &dev, UINT uiBegin, UINT uiLen, char *szFile) {
 	CRKUsbComm *pComm = nullptr;
@@ -2501,6 +2525,7 @@ Exit_ReadLBA:
 		fclose(file);
 	return bSuccess;
 }
+
 bool erase_ubi_block(STRUCT_RKDEVICE_DESC &dev, u32 uiOffset, u32 uiPartSize) {
 	STRUCT_FLASHINFO_CMD info;
 	CRKComm *pComm = nullptr;
@@ -2573,6 +2598,7 @@ EXIT_UBI_ERASE:
 	delete pComm;
 	return bSuccess;
 }
+
 bool erase_partition(CRKUsbComm *pComm, UINT uiOffset, UINT uiSize) {
 	UINT uiErase = 1024 * 32;
 	bool bSuccess = true;
@@ -2598,6 +2624,7 @@ bool erase_partition(CRKUsbComm *pComm, UINT uiOffset, UINT uiSize) {
 	}
 	return bSuccess;
 }
+
 bool eat_sparse_chunk(FILE *file, chunk_header &chunk) {
 	UINT uiRead;
 	uiRead = fread(&chunk, 1, sizeof(chunk_header), file);
@@ -2609,6 +2636,7 @@ bool eat_sparse_chunk(FILE *file, chunk_header &chunk) {
 	}
 	return true;
 }
+
 bool eat_sparse_data(FILE *file, PBYTE pBuf, DWORD dwSize) {
 	UINT uiRead;
 	uiRead = fread(pBuf, 1, dwSize, file);
