@@ -2813,9 +2813,6 @@ Exit_WriteSparseLBA:
 }
 
 bool write_lba(STRUCT_RKDEVICE_DESC &dev, UINT uiBegin, char *szFile) {
-	if (!check_device_type(dev, RKUSB_LOADER | RKUSB_MASKROM))
-		return false;
-	return false;
 	CRKUsbComm *pComm = nullptr;
 	FILE *file = nullptr;
 	bool bRet, bFirst = true, bSuccess = false;
@@ -2825,6 +2822,9 @@ bool write_lba(STRUCT_RKDEVICE_DESC &dev, UINT uiBegin, char *szFile) {
 	UINT uiLen;
 	int nSectorSize = 512;
 	BYTE pBuf[nSectorSize * DEFAULT_RW_LBA];
+
+	if (!check_device_type(dev, RKUSB_LOADER | RKUSB_MASKROM))
+		return false;
 
 	pComm = new CRKUsbComm(dev, g_pLogObject, bRet);
 	if (bRet) {
