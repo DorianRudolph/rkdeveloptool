@@ -3032,6 +3032,7 @@ bool handle_command(int argc, char *argv[], CRKScan *pScan) {
 		}
 		printf("tagspl: parameter error\n");
 		usage();
+		return false;
 	}
 	cnt = pScan->Search(RKUSB_MASKROM | RKUSB_LOADER);
 	if (strcmp(strCmd.c_str(), "LD") == 0 ||
