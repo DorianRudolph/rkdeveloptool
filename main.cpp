@@ -45,7 +45,7 @@ void usage() {
 	printf("Reads or writes the storage of a rockchip device booted into the "
 		   "rockusb bootloader mode\n\n");
 
-	printf("  -h, --help      print this help text\n");
+	printf("  -h, --help, help      print this help text\n");
 	printf("  -v, --version   print the version of this tool\n\n");
 
 	printf("  list                  List the detected devices in rockusb "
@@ -3006,7 +3006,8 @@ bool handle_command(int argc, char *argv[], CRKScan *pScan) {
 		s[i] = toupper(s[i]);
 
 	if ((strcmp(strCmd.c_str(), "-H") == 0) ||
-			(strcmp(strCmd.c_str(), "--HELP")) == 0) {
+			(strcmp(strCmd.c_str(), "--HELP")) == 0 ||
+			(strcmp(strCmd.c_str(), "HELP"))) {
 		usage();
 		return true;
 	} else if ((strcmp(strCmd.c_str(), "-V") == 0) ||
