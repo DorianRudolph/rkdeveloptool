@@ -13,7 +13,7 @@ image: alpine:latest
 # https://docs.gitlab.com/ee/ci/merge_request_pipelines/index.html#excluding-certain-jobs
 .only-default: &only-default
   only:
-    - master
+    - main
     - merge_requests
     - tags
 
