@@ -3007,7 +3007,7 @@ bool handle_command(int argc, char *argv[], CRKScan *pScan) {
 
 	if ((strcmp(strCmd.c_str(), "-H") == 0) ||
 			(strcmp(strCmd.c_str(), "--HELP")) == 0 ||
-			(strcmp(strCmd.c_str(), "HELP"))) {
+			(strcmp(strCmd.c_str(), "HELP")) == 0) {
 		usage();
 		return true;
 	} else if ((strcmp(strCmd.c_str(), "-V") == 0) ||
