@@ -24,6 +24,7 @@ This will use PAM to elevate privileges where necessary.
 
 ## Usage
 
+```
 Usage: rkdeveloptool command [args]...
 Reads or writes the storage of a rockchip device booted into the rockusb bootloader mode
 
@@ -53,6 +54,7 @@ Reads or writes the storage of a rockchip device booted into the rockusb bootloa
   pack                  Pack bootloader
   unpack                Unpack bootloader
   tag-spl               Tag U-Boot SPL
+```
 
 Some of these commands are legacy and probably not useful to us, but they're here anyway :>
 
